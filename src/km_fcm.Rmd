@@ -1,0 +1,133 @@
+```{r kmfcm, cache=cacheon}
+
+kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
+
+  # crude
+  fitu <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
+    data = pdata_fcm
+  )
+
+  ## logrank
+  sdu <- survdiff(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
+    data = pdata_fcm
+  )
+  pu <- dF(pchisq(sdu$chisq, length(sdu$n) - 1, lower.tail = FALSE), dig = 3, p = TRUE)
+
+  # adj match
+  fitm <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
+    data = matchp_fcm
+  )
+  ## logrank
+  sdm <- survdiff(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
+    data = matchp_fcm
+  )
+  pm <- dF(pchisq(sdm$chisq, length(sdm$n) - 1, lower.tail = FALSE), dig = 3, p = TRUE)
+
+  # c(bottom, left, top, right)
+  par(mar = c(5, 4, 4, 7) + 0.1)
+  plot(fitu,
+    fun = "event",
+    ylab = eventname,
+    xscale = 30.5,
+    yscale = 100,
+    col = global_kicols,
+    mark.time = FALSE,
+    bty = "n",
+    xlim = c(0, 366),
+    ylim = c(0, 1),
+    xlab = "Months",
+    axes = F,
+    lwd = 3,
+    lty = c(1, 2),
+    xaxs = "i", yaxs = "i"
+  )
+
+  lines(fitm,
+    fun = "event",
+    xscale = 30.5,
+    yscale = 100,
+    col = global_kicols[c(3, 2)],
+    mark.time = FALSE,
+    lwd = 3,
+    lty = c(3, 2),
+    xaxs = "i", yaxs = "i"
+  )
+
+  axis(2, seq(0, 1, 0.25), seq(0, 100, 25), las = 2)
+  axis(1, at = seq(0, 12, 2) * 30.5, seq(0, 12, 2))
+
+  yposu <- 1 - summary(fitu, 365)$surv
+  yposm <- 1 - summary(fitm, 365)$surv
+
+  ylabs <- bind_cols(
+    ypos = c(yposm, yposu[1]),
+    ytext = c("No FCM matched", "FCM", "No FCM all")
+  ) %>%
+    arrange(ypos)
+
+  mtext(
+    side = 4,
+    line = .2,
+    at = ylabs$ypos + yposplus,
+    ylabs$ytext,
+    las = 1
+  )
+
+  text(20, 0.7, paste0("Log-rank all p = ", pu), pos = 4)
+  text(20, 0.65, paste0("Log-rank matched p = ", pm), pos = 4)
+}
+```
+
+```{r kmfcmresp, fig.cap="1-KM First respiratory hospitalization (negative control)", cache=cacheon, dependson="kmfcm"}
+kmfunc(
+  time = "sos_outtime_hosprespiratory",
+  event = "sos_out_hosprespiratory",
+  eventname = "First respiratory hospitalization (%)",
+  yposplus = c(-0.025, 0, 0.015) # lowest, middle, highest
+)
+```
+
+```{r kmfcmdeathhfhosp, fig.cap="1-KM All-cause death/first HF hospitalization", cache=cacheon, dependson="kmfcm"}
+kmfunc(
+  time = "sos_outtime_hosphf",
+  event = "sos_out_deathhosphf",
+  eventname = "All-cause death/first HF hospitalization (%)",
+  yposplus = c(0, -0.01, 0.01) # lowest, middle, highest
+)
+```
+
+```{r kmfcmdeath, fig.cap="1-KM All-cause death", cache=cacheon, dependson="kmfcm"}
+kmfunc(
+  time = "sos_outtime_death",
+  event = "sos_out_death",
+  eventname = "All-cause death (%)",
+  yposplus = c(-0, +0, -0) # lowest, middle, highest
+)
+```
+
+```{r kmfcmhfhosp, fig.cap="1-KM First HF hospitalization", cache=cacheon, dependson="kmfcm"}
+kmfunc(
+  time = "sos_outtime_hosphf",
+  event = "sos_out_hosphf",
+  eventname = "First HF hospitalization (%)",
+  yposplus = c(0, -0.009, 0.009) # lowest, middle, highest
+)
+```
+
+```{r kmfcmhosp, fig.cap="1-KM First all-cause hospitalization", cache=cacheon, dependson="kmfcm"}
+kmfunc(
+  time = "sos_outtime_hospany",
+  event = "sos_out_hospany",
+  eventname = "First all-cause hospitalization (%)",
+  yposplus = c(0, 0, 0) # lowest, middle, highest
+)
+```
+
+```{r kmfcmhfvis, fig.cap="1-KM First HF visit", cache=cacheon, dependson="kmfcm"}
+kmfunc(
+  time = "sos_outtime_vishf",
+  event = "sos_out_vishf",
+  eventname = "First HF visit (%)",
+  yposplus = c(0, 0, 0) # lowest, middle, highest
+)
+```

@@ -1,0 +1,127 @@
+```{r tab1fcm, cache=cacheon}
+
+tab1all <- print(CreateTableOne(
+  vars = tabvars[tabvars != "shf_ferrocarboxymaltosis"],
+  data = pdata,
+  strata = "shf_ferrocarboxymaltosis"
+),
+missing = TRUE, printToggle = FALSE, nonnormal = tabvars,
+catDigits = 1, contDigits = 1,
+noSpaces = TRUE,
+explain = FALSE,
+smd = TRUE
+)
+tab1all <- as_tibble(cbind(var = rownames(tab1all), tab1all)) %>%
+    select(var, Missing, No:p, SMD)
+
+tab1m <- print(CreateTableOne(
+  vars = tabvars[tabvars != "shf_ferrocarboxymaltosis"],
+  data = matchp_fcm,
+  strata = "shf_ferrocarboxymaltosis"
+),
+missing = FALSE, printToggle = FALSE, nonnormal = tabvars,
+catDigits = 1, contDigits = 1,
+noSpaces = TRUE,
+explain = FALSE,
+smd = TRUE
+)
+tab1m <- as_tibble(cbind(var = rownames(tab1m), tab1m)) %>%
+    select(var, No:p, SMD)
+
+
+tab1 <- Reduce(
+  function(...) {
+    full_join(...,
+      by = "var"
+    )
+  },
+  list(tab1all, tab1m)
+) %>%
+  # remove = Yes
+  mutate(across(everything(), str_replace_all, fixed(" = Yes"), "")) %>%
+  # to get labs and units in place
+  mutate(
+    var_tmp = str_split(var, " = ", simplify = TRUE)[, 1],
+    val_tmp = str_split(var, " = ", simplify = TRUE)[, 2],
+    # if recoding or categorizing will still get org label
+    var_tmp2 = str_replace_all(var_tmp, "(_cat2|_cat)", ""),
+    # if shf/sos combination  will still get org label
+    var_tmp2 = str_replace_all(var_tmp2, "shf_sos_com_", "sos_com_"),
+  )
+
+tab1 <- left_join(tab1,
+  meta.variables.Sheet.1 %>%
+    select(variable, label, unit),
+  by = c("var_tmp2" = "variable")
+) %>%
+  mutate(
+    Variable = coalesce(label, var_tmp),
+    Variable = if_else(!is.na(unit),
+      paste0(Variable, " (", unit, ")"),
+      Variable
+    ),
+    Variable = if_else(val_tmp != "",
+      paste0(Variable, " ", val_tmp),
+      Variable
+    )
+  )
+
+
+write.xlsx(tab1 %>%
+  select(Variable, Missing:SMD.y), paste0("./output/tabs/tab1_fcm_", Sys.Date(), ".xlsx"), rowNames = FALSE)
+
+# footnotes
+tab1 <- tab1 %>%
+  mutate(
+    footnote1 = if_else(str_detect(var, "^shf_"), footnote_marker_symbol(1), ""),
+    footnote2 = if_else(str_detect(var, "sos_"), footnote_marker_symbol(2), ""),
+    footnote3 = if_else(str_detect(var, "^scb_"), footnote_marker_symbol(3), ""),
+    footnote4 = if_else(var_tmp %in% modvars_fcm, footnote_marker_symbol(4), ""),
+    footnote5 = if_else(str_detect(var, "^shf_rasarni"), footnote_marker_symbol(5), ""),
+    footnote6 = if_else(str_detect(var, "^scb_dispincome_cat"), footnote_marker_symbol(6), ""),
+    footnote7 = if_else(str_detect(var, "^shf_ntpropbnp_cat"), footnote_marker_symbol(7), "")
+  ) %>%
+  unite(footnote, starts_with("footnote"), sep = "") %>%
+  mutate(
+    # so no probs
+    Variable = sanitize_text(Variable),
+
+    Variable = paste0(Variable, footnote),
+
+    # space in Latex output (fix this other way?)
+    Variable = sub("  ", ". ", Variable)
+  ) %>%
+  select(Variable, Missing:SMD.y)
+
+
+## fix in order to use escape = TRUE
+colnames(tab1) <- sanitize_text(c(
+  "Variables", "Missing (%)", rep(c(levels(pdata$shf_ferrocarboxymaltosis), "p-value", "SMD"), 2)
+))
+
+myHeader <- c(" " = 1, " " = 1, "All" = 4, "Matched" = 4)
+names(myHeader) <- c(" ", " ", "All", "Matched")
+
+footnote(
+  mykable(tab1,
+    fontsize = 6,
+    caption = "Baseline characteristics by FCM",
+    longtable = TRUE,
+    escape = FALSE
+  ) %>%
+    landscape() %>%
+    add_header_above(myHeader),
+  general = c(
+    "Categorical variables are presented with n (%) and tested with chi-square test and continuous variables with median [q1-q3] and tested with Mann-Whitney U test."
+  ),
+  symbol = c(
+    "Source: SwedeHF",
+    "Source: NPR",
+    "Source: SCB",
+    "Included in the multiple imputation model (althought not necessarily imputed if there is no missing data) and logistic/cox models",
+    "arb/acei/arni",
+    "Medium within index year",
+    "Medium within EF"
+  )
+)
+```

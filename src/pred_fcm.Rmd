@@ -1,0 +1,127 @@
+```{r predfcm, fig.cap="Predictors of use of FCM", cache=cacheon}
+
+ormod <- with(imp, glm(formula(paste0("shf_ferrocarboxymaltosis == 'Yes' ~ ", paste(modvars, collapse = " + "))),
+  family = binomial(link = "logit")
+))
+
+sormod <- summary(pool(ormod))
+
+nval <- length(sormod$term)
+orforest <- bind_cols(
+  var = as.character(sormod$term[2:nval]),
+  logor = sormod$estimate[2:nval],
+  lci = sormod$estimate[2:nval] - global_z05 * sormod$std.error[2:nval],
+  uci = sormod$estimate[2:nval] + global_z05 * sormod$std.error[2:nval],
+  p = dF(sormod$p.value[2:nval], dig = 3, p = TRUE)
+)
+
+orforest <- orforest %>%
+  # remove = Yes
+  mutate(across(everything(), str_replace_all, fixed("Yes"), "")) %>%
+  # to get labs and units in place
+  mutate(
+    # if recoding or categorizing will still get org label
+    var_tmp = str_replace_all(var, "(_cat2|_cat)", ""),
+    # if shf/sos combination  will still get org label
+    var_tmp = str_replace_all(var_tmp, "shf_sos_com_", "sos_com_"),
+  )
+
+orforest <- left_join(orforest,
+  meta.variables.Sheet.1 %>%
+    select(variable, label, unit),
+  by = c("var_tmp" = "variable")
+) %>%
+  mutate(
+    Variable = coalesce(label, var_tmp),
+    Variable = if_else(!is.na(unit),
+      paste0(Variable, " (", unit, ")"),
+      Variable
+    )
+  )
+
+orforest <- orforest %>%
+  mutate(
+    modnameforest = case_when(
+      Variable == "shf_nyhaIV" ~ "NYHA IV vs I",
+      Variable == "shf_nyhaIII" ~ "NYHA III vs I",
+      Variable == "shf_nyhaII" ~ "NYHA II vs I",
+      Variable %in% c("shf_ntpropbnpAbove medium within EF", "shf_ntpropbnpAbove medium") ~ "NTproBNP Above vs below medium",
+      Variable == "shf_potassiumhypokalemia" ~ "Hypokalemia",
+      Variable == "scb_famtypeLiving alone" ~ "Living alone",
+      Variable == "shf_deviceCRT/ICD" ~ "CRT/ICD",
+      Variable == "shf_durationhf>6mo" ~ "Duration HF > 6mo",
+      Variable == "shf_age>=75" ~ "Age>=75 vs <75",
+      Variable == "shf_potassiumhyperkalemia" ~ "Hyperkalemia",
+      Variable == "shf_smokingFormer/Current" ~ "Former/Current smoker",
+      Variable == "scb_educationUniversity" ~ "University vs Compulsory school",
+      Variable == "shf_bmi>=30" ~ "BMI>=30 vs <30",
+      Variable == "shf_followuplocationOther" ~ "Follow-up Other vs Hospital",
+      Variable == "shf_followuplocationPrimary care" ~ "Follow-up Primary care vs Hospital",
+      Variable == "shf_efHFmrEF" ~ "HFmrEF vs HFrEF",
+      Variable == "shf_sexMale" ~ "Male vs Female",
+      Variable == "shf_efHFpEF" ~ "HFpEF vs HFrEF",
+      Variable == "scb_dispincomeAbove medium" ~ "Income Above vs below medium",
+      Variable == "shf_map>90" ~ "MAP>90 vs <=90",
+      Variable == "shf_gfrckdepi<60" ~ "eGFR<60 vs >=60",
+      Variable == "shf_heartrate>70" ~ "Heart rate>70 vs <=70",
+      TRUE ~ Variable
+    ),
+    logor = as.numeric(logor)
+  ) %>%
+  arrange(logor)
+
+
+
+cextext <- 0.5
+
+# c(bottom, left, top, right)
+par(mar = c(4, 8, 1, 4) + 0.2)
+plot(orforest$logor, 1:nrow(orforest),
+  xlab = "",
+  xlim = c(
+    log(0.1),
+    log(12)
+  ),
+  ylim = c(1, nrow(orforest) + 1),
+  axes = FALSE,
+  ylab = NA,
+  cex.lab = 1.1,
+  main = NA,
+  cex = 1,
+  type = "p",
+  pch = 22,
+  bg = global_kicols[1],
+  col = global_kicols[1]
+)
+
+
+for (i in 1:nrow(orforest)) {
+  matplot(c(orforest$lci[i], orforest$uci[i]), c(i, i),
+    type = "l", add = TRUE, col = global_kicols[1], cex = 2
+  )
+}
+
+matplot(c(0, 0), c(-1, nrow(orforest) + 0.5), type = "l", lty = 3, add = TRUE, col = "black")
+
+axis(1,
+  cex.axis = cextext, at = log(c(seq(0.1, 1, 0.1), seq(1, 12, 1))),
+  labels = c(0.1, 0.2, 0.3, 0.4, NA, 0.6, NA, 0.8, NA, 1.0, seq(1, 12, 1))
+)
+
+axis(2,
+  at = 1:(nrow(orforest) + 1),
+  labels = c(orforest$modnameforest, "Variable"),
+  cex.axis = cextext, tick = FALSE, las = 2, line = 7, hadj = 0
+)
+
+axis(2,
+  at = 1:(nrow(orforest) + 1),
+  labels = c(orforest$p, "P-value"),
+  cex.axis = cextext, tick = FALSE, las = 2, line = -25, hadj = 0.5
+)
+
+axis(1,
+  at = 0.05, cex.axis = cextext,
+  labels = "FCM use less likely    FCM use more likely", line = 1, tick = FALSE
+)
+```

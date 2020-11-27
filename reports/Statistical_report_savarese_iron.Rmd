@@ -1,0 +1,238 @@
+---
+title: 'Statistical report: Phenotyping heart failure patients with iron deficiency/amenia for iron treatment and health care outcomes'
+subtitle: 'DRAFT'
+author: 'Statistician: Lina Benson'
+  
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    fig_caption: yes
+    fig_height: 7
+    fig_width: 7
+    number_sections: yes
+link-citations: yes
+bibliography: references.bib
+nocite: '@*'
+header-includes:
+   - \usepackage{draftwatermark}
+---
+
+\newpage 
+\tableofcontents 
+\listoffigures
+\listoftables
+\newpage
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, include = TRUE, comment = "",
+  warning = FALSE, message = FALSE, fig.pos = "H",
+  fig.path = "../output/figs/"
+)
+options(knitr.kable.NA = "")
+```
+
+```{r adjust_directory_if_needed, include=FALSE}
+# Uncomment lines below if rmd file is placed in a subdirectory
+knitr::opts_knit$set(root.dir = normalizePath("../"))
+```
+
+```{r load_project}
+# 1. Set options in config/global.dcf
+# 2. Load packages listed in config/global.dcf
+# 3. Import functions and code in lib directory
+
+ProjectTemplate::reload.project()
+
+cacheon <- TRUE
+```             
+
+# Data handling
+
+## Data source
+
+SHFDB3, https://kiheartfailure.github.io/shfdb3/, v 3.1.5. 
+
+## Inclusion/exclusion criteria
+
+```{r flow}
+mykable(flow, caption = "Flowchart")
+```
+
+First patient in: `r min(pdata$shf_indexdtm)` and last patient in: `r max(pdata$shf_indexdtm)`.  
+
+The median age (IQR) is `r pdata %>% summarise(med = dF(median(shf_age), dig = 1),
+                                             q1 = dF(quantile(shf_age, probs = 0.25), dig = 1),
+                                             q3 = dF(quantile(shf_age, probs = 0.75), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
+                                   pull(out)` and 
+`r pdata %>% count(shf_sex) %>%
+  mutate(perc = dF(n / sum(n) * 100, 1)) %>%
+  filter(shf_sex == "Female") %>%
+  pull(perc)`% females.    
+  
+## Created variables 
+
+```{r npr}
+mykable(metaout, caption = "Additional outcomes from NPR")
+```
+
+# Statistical analysis 
+
+## General
+
+All analyses were performed using `r sessionInfo()$R.version$version.string` [@r]. 
+The level of significance is set to 5%, two-sided. No adjustment for multiple 
+comparisons were made and therefore the results should be viewed with some care.
+
+## Missing data
+
+Missing data was imputed with multiple imputation (n = 10) using mice [@mice]. 
+Variables included in the model are indicated in 
+Table \ref{tab:tab1aid}. The primary outcome, 
+first heart failure hospitalization/all-cause death,
+was included as the Nelson-Aalen estimator. 
+
+## Baseline characteristics according to A/ID status
+
+```{r, child = "../src/tab1_aid.Rmd"}
+
+```
+
+## Outcome analysis according to the A/ID status
+
+The following outcomes are considered: 
+
+- All-cause mortality/first HF hospitalization (primary endpoint)
+- All-cause mortality
+- First HF hospitalization
+- First all-cause hospitalization
+- First HF visit
+
+- Repeated HF hospitalization
+- Repeated all-cause hospitalization
+- Repeated HF visit
+
+Data were censored at 2018-12-31 or death/emigration. 
+
+The outcomes are presented with the 1 - Kaplan-Meier curves
+and tested with the log-rank test. Cox proportional hazards regressions were 
+used to model the time to first event analysis and negative binomial regression to model 
+the repeated events. The models were partly crude and partly adjusted for variables 
+indicated in Table \ref{tab:tab1aidall}.
+
+The median (min-max) follow-up is 
+`r pdata %>% summarise(med = dF(median(sos_outtime_death / 365.25 * 12), dig = 1),
+                                             min = dF(min(sos_outtime_death / 365.25 * 12), dig = 1),
+                                             max = dF(max(sos_outtime_death / 365.25 * 12), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", min, "-", max, ")")) %>%
+                                   pull(out)` months for a total of 
+                                   `r pdata %>% summarise(sumpy = dF(sum(sos_outtime_death) / 365.25, dig = 0)) %>%
+                                   pull(sumpy)` patient-years of follow-up.
+
+
+```{r, child = "../src/km_aid.Rmd"}
+
+```
+
+```{r, child = "../src/outtab_aid.Rmd"}
+
+```
+
+\clearpage
+\newpage
+
+# FCM 
+
+In this analysis patients are included if the are ID 
+(ferritin <100 µg/L, or ferritin between 100–299 µg/L and transferrin saturation <20%) or
+are taking FCM.
+
+## Baseline characteristics according to the use of FCM 
+
+```{r, child = "../src/tab1_fcm.Rmd"}
+
+```
+
+```{r, child = "../src/densitydose_fcm.Rmd"}
+
+```
+
+```{r, child = "../src/geo_fcm.Rmd"}
+
+```
+
+\clearpage
+\newpage
+
+## Propensity scores
+
+A propensity score for treatment with FCM was estimated for each patient with 
+logistic regression for each of the 10 imputed datasets using the variables 
+indicated in Table \ref{tab:tab1fcm}. 1:1 matching without replacement [@match] 
+was thereafter performed on the average of the resulting 10 ps [@psmatch]. Matching was 
+allowed if the propensity score differed by 0.01 or less. The ability of the ps 
+matching to balance the baseline characteristics was assessed by 
+standardized mean differences.  
+
+1:1 has deemed the best option when taking into account the number of patients retained.
+Other matching ratios: `r matchingn`.
+
+## Outcomes according to the use of FCM
+
+Data were censored at 2018-12-31 or death/emigration. 
+
+The outcomes are presented with the 1 - Kaplan-Meier curves
+and tested with the log-rank test. Cox proportional hazards regressions were 
+used to model the time to first event analysis and negative binomial regression to model 
+the repeated events. The models were partly crude, partly adjusted for 
+the individual variables indicated in Table \ref{tab:tab1fcm} and partly in matched cohort, 
+modelling the dependence between pairs with a strata term. Note to self: AND WHAT TO DO ABOUT THE NB MODEL????
+
+The median (min-max) follow-up is 
+`r pdata_fcm %>% summarise(med = dF(median(sos_outtime_death / 365.25 * 12), dig = 1),
+                                             min = dF(min(sos_outtime_death / 365.25 * 12), dig = 1),
+                                             max = dF(max(sos_outtime_death / 365.25 * 12), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", min, "-", max, ")")) %>%
+                                   pull(out)` months for a total of 
+                                   `r pdata_fcm %>% summarise(sumpy = dF(sum(sos_outtime_death) / 365.25, dig = 0)) %>%
+                                   pull(sumpy)` patient-years of follow-up.
+
+
+```{r, child = "../src/km_fcm.Rmd"}
+
+```
+
+```{r, child = "../src/outtab_fcm.Rmd"}
+
+```
+
+```{r, child = "../src/outtab_fcm_ef.Rmd"}
+
+```
+
+\clearpage
+\newpage
+
+```{r, child = "../src/pred_fcm.Rmd"}
+
+```
+
+# Reproducibility
+
+## R session information {#sessioninfo}
+
+```{r sessinfo}
+sessionInfo()
+```
+
+## R code
+
+The R code for all data handling and statistical analyses are found: 
+https://github.com/KIHeartFailure/iron. On publication
+the repository will be made public so as to 
+link to it from the resulting article for increased transparency and code sharing.
+No data or output is stored in the repository. 
+
+# References
