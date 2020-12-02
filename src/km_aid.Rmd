@@ -1,17 +1,17 @@
 ```{r kmaid, cache=cacheon}
 
 kmfunc <- function(time, event, eventname, yposplus = rep(0, 4)) {
-  
   fit <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_aid")),
     data = pdata
   )
 
-  ## logrank
-  sd <- survdiff(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_aid")),
+  ## cox
+  mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_aid")),
     data = pdata
   )
+  pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
 
-  p <- dF(pchisq(sd$chisq, length(sd$n) - 1, lower.tail = FALSE), dig = 3, p = TRUE)
+  p <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
 
   # c(bottom, left, top, right)
   par(mar = c(5, 4, 4, 4) + 0.1)
@@ -49,7 +49,7 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 4)) {
     las = 1
   )
 
-  text(20, 0.6, paste0("Log-rank p = ", p), pos = 4)
+  text(20, 0.6, paste0("P-value ", p), pos = 4)
 }
 ```
 

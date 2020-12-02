@@ -11,10 +11,10 @@ tab1aid <- function(data, title) {
   noSpaces = TRUE,
   explain = FALSE
   )
-  
+
   tab1 <- as_tibble(cbind(var = rownames(tab1), tab1)) %>%
     select(var, Missing, `A-/ID-`:p)
-  
+
   tab1 <- tab1 %>%
     # remove = Yes
     mutate(across(everything(), str_replace_all, fixed(" = Yes"), "")) %>%
@@ -55,10 +55,11 @@ tab1aid <- function(data, title) {
       footnote1 = if_else(str_detect(var, "^shf_"), footnote_marker_symbol(1), ""),
       footnote2 = if_else(str_detect(var, "sos_"), footnote_marker_symbol(2), ""),
       footnote3 = if_else(str_detect(var, "^scb_"), footnote_marker_symbol(3), ""),
-      footnote4 = if_else(var_tmp %in% modvars, footnote_marker_symbol(4), ""),
-      footnote5 = if_else(str_detect(var, "^shf_rasarni"), footnote_marker_symbol(5), ""),
-      footnote6 = if_else(str_detect(var, "^scb_dispincome_cat"), footnote_marker_symbol(6), ""),
-      footnote7 = if_else(str_detect(var, "^shf_ntpropbnp_cat"), footnote_marker_symbol(7), "")
+      footnote4 = if_else(var_tmp %in% c(modvars, "shf_indexyear"), footnote_marker_symbol(4), ""),
+      footnote5 = if_else(str_detect(var, "^shf_indexyear"), footnote_marker_symbol(5), ""),
+      footnote6 = if_else(str_detect(var, "^shf_rasarni"), footnote_marker_symbol(6), ""),
+      footnote7 = if_else(str_detect(var, "^scb_dispincome_cat"), footnote_marker_symbol(7), ""),
+      footnote8 = if_else(str_detect(var, "^shf_ntpropbnp_cat"), footnote_marker_symbol(8), "")
     ) %>%
     unite(footnote, starts_with("footnote"), sep = "") %>%
     mutate(
@@ -94,6 +95,7 @@ tab1aid <- function(data, title) {
       "Source: NPR",
       "Source: SCB",
       "Included in the multiple imputation model (althought not necessarily imputed if there is no missing data) and logistic/cox models",
+      "Included in the models as a continuous variable year and month",
       "arb/acei/arni",
       "Medium within index year",
       "Medium within EF"

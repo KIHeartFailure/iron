@@ -7,21 +7,24 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
     data = pdata_fcm
   )
 
-  ## logrank
-  sdu <- survdiff(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
+  ## cox
+  mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
     data = pdata_fcm
   )
-  pu <- dF(pchisq(sdu$chisq, length(sdu$n) - 1, lower.tail = FALSE), dig = 3, p = TRUE)
+  pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
+  pu <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
 
   # adj match
   fitm <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
     data = matchp_fcm
   )
-  ## logrank
-  sdm <- survdiff(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
+
+  ## cox
+  mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis + strata(par)")),
     data = matchp_fcm
   )
-  pm <- dF(pchisq(sdm$chisq, length(sdm$n) - 1, lower.tail = FALSE), dig = 3, p = TRUE)
+  pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
+  pm <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
 
   # c(bottom, left, top, right)
   par(mar = c(5, 4, 4, 7) + 0.1)
@@ -73,8 +76,8 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
     las = 1
   )
 
-  text(20, 0.7, paste0("Log-rank all p = ", pu), pos = 4)
-  text(20, 0.65, paste0("Log-rank matched p = ", pm), pos = 4)
+  text(20, 0.7, paste0("P-value all ", pu), pos = 4)
+  text(20, 0.65, paste0("P-value matched ", pm), pos = 4)
 }
 ```
 
@@ -101,7 +104,7 @@ kmfunc(
   time = "sos_outtime_death",
   event = "sos_out_death",
   eventname = "All-cause death (%)",
-  yposplus = c(-0, +0, -0) # lowest, middle, highest
+  yposplus = c(-0.01, +0.01, 0.02) # lowest, middle, highest
 )
 ```
 

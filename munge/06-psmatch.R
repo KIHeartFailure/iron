@@ -2,10 +2,17 @@
 
 # Propensity scores -------------------------------------------------------
 
-ps <- data.frame(matrix(NA, nrow = nrow(pdata), ncol = 11))
+pdata_fcm <- pdata %>%
+  filter(shf_id == "Yes" | shf_ferrocarboxymaltosis == "Yes")
+
+ps <- data.frame(matrix(NA, nrow = nrow(pdata_fcm), ncol = 11))
 
 for (i in 1:10) {
   impdata_ps <- mice::complete(imp, i)
+
+  impdata_ps <- impdata_ps %>%
+    filter(shf_id == "Yes" | shf_ferrocarboxymaltosis == "Yes")
+
   if (i == 1) ps[, 1] <- impdata_ps$LopNr
   pslog <- glm(formula(paste0(
     "shf_ferrocarboxymaltosisnum ~ ",
@@ -19,15 +26,13 @@ for (i in 1:10) {
   ps[, i + 1] <- pslog$fitted
 }
 
-pdata <- left_join(pdata,
+pdata_fcm <- left_join(
+  pdata_fcm,
   ps %>%
     mutate(ps = rowSums(.[2:11]) / 10) %>%
     select(X1, ps),
   by = c("LopNr" = "X1")
 )
-
-pdata_fcm <- pdata %>% 
-  filter(shf_id == "Yes" | shf_ferrocarboxymaltosis == "Yes")
 
 cal <- c(0.01 / sd(pdata_fcm$ps))
 
@@ -92,5 +97,5 @@ matchingn <- paste0(
 
 pdata_fcm$par <- rep(NA, nrow(pdata_fcm))
 
-pdata_fcm$par[c(unique(match1$index.treated), match1$index.control)] <- c(1:match1$wnobs, rep(1:match1$wnobs, each = 1))
-matchp_fcm <- pdata_fcm[c(unique(match1$index.treated), match1$index.control), ]
+pdata_fcm$par[c(unique(match2$index.treated), match2$index.control)] <- c(1:match2$wnobs, rep(1:match2$wnobs, each = 2))
+matchp_fcm <- pdata_fcm[c(unique(match2$index.treated), match2$index.control), ]

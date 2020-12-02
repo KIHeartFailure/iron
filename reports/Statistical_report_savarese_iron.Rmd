@@ -1,6 +1,5 @@
 ---
 title: 'Statistical report: Phenotyping heart failure patients with iron deficiency/amenia for iron treatment and health care outcomes'
-subtitle: 'DRAFT'
 author: 'Statistician: Lina Benson'
   
 date: "`r Sys.Date()`"
@@ -13,14 +12,12 @@ output:
 link-citations: yes
 bibliography: references.bib
 nocite: '@*'
-header-includes:
-   - \usepackage{draftwatermark}
 ---
 
 \newpage 
 \tableofcontents 
-\listoffigures
 \listoftables
+\listoffigures
 \newpage
 
 
@@ -90,9 +87,12 @@ comparisons were made and therefore the results should be viewed with some care.
 
 Missing data was imputed with multiple imputation (n = 10) using mice [@mice]. 
 Variables included in the model are indicated in 
-Table \ref{tab:tab1aid}. The primary outcome, 
+Table \ref{tab:tab1aidall}. The primary outcome, 
 first heart failure hospitalization/all-cause death,
-was included as the Nelson-Aalen estimator. 
+was included as the Nelson-Aalen estimator. Anemia, ID and FCM are not included 
+in the imputation model. 
+
+# A/ID status
 
 ## Baseline characteristics according to A/ID status
 
@@ -116,11 +116,18 @@ The following outcomes are considered:
 
 Data were censored at 2018-12-31 or death/emigration. 
 
-The outcomes are presented with the 1 - Kaplan-Meier curves
-and tested with the log-rank test. Cox proportional hazards regressions were 
+The outcomes are presented with the 1 - Kaplan-Meier curves with the overall p 
+from the crude cox regression presented in the figure. Cox proportional hazards regressions were 
 used to model the time to first event analysis and negative binomial regression to model 
 the repeated events. The models were partly crude and partly adjusted for variables 
 indicated in Table \ref{tab:tab1aidall}.
+
+### Assumptions
+
+The proportional hazards assumption was investigated using the scaled Schoenfeld 
+residuals (cox.zph in [@survival-package]) for the primary outcome. 
+Possible outliers were visually inspected by plotting the dfbetas. 
+=> No action deemed necessary. 
 
 The median (min-max) follow-up is 
 `r pdata %>% summarise(med = dF(median(sos_outtime_death / 365.25 * 12), dig = 1),
@@ -149,6 +156,19 @@ In this analysis patients are included if the are ID
 (ferritin <100 µg/L, or ferritin between 100–299 µg/L and transferrin saturation <20%) or
 are taking FCM.
 
+## Propensity scores and matching
+
+A propensity score for treatment with FCM was estimated for each patient with 
+logistic regression for each of the 10 imputed datasets using the variables 
+indicated in Table \ref{tab:tab1fcm}. 1:2 matching without replacement [@match] 
+was thereafter performed on the average of the resulting 10 ps [@psmatch]. Matching was 
+allowed if the propensity score differed by 0.01 or less. The ability of the ps 
+matching to balance the baseline characteristics was assessed by 
+standardized mean differences.  
+
+1:2 has deemed the best option when taking into account the number of patients retained and balance between groups.
+Other matching ratios: `r matchingn`.
+
 ## Baseline characteristics according to the use of FCM 
 
 ```{r, child = "../src/tab1_fcm.Rmd"}
@@ -166,29 +186,24 @@ are taking FCM.
 \clearpage
 \newpage
 
-## Propensity scores
-
-A propensity score for treatment with FCM was estimated for each patient with 
-logistic regression for each of the 10 imputed datasets using the variables 
-indicated in Table \ref{tab:tab1fcm}. 1:1 matching without replacement [@match] 
-was thereafter performed on the average of the resulting 10 ps [@psmatch]. Matching was 
-allowed if the propensity score differed by 0.01 or less. The ability of the ps 
-matching to balance the baseline characteristics was assessed by 
-standardized mean differences.  
-
-1:1 has deemed the best option when taking into account the number of patients retained.
-Other matching ratios: `r matchingn`.
-
 ## Outcomes according to the use of FCM
 
 Data were censored at 2018-12-31 or death/emigration. 
 
-The outcomes are presented with the 1 - Kaplan-Meier curves
-and tested with the log-rank test. Cox proportional hazards regressions were 
+The outcomes are presented with the 1 - Kaplan-Meier curves with the p 
+from the cox regressions presented in the figure. Cox proportional hazards regressions were 
 used to model the time to first event analysis and negative binomial regression to model 
 the repeated events. The models were partly crude, partly adjusted for 
-the individual variables indicated in Table \ref{tab:tab1fcm} and partly in matched cohort, 
-modelling the dependence between pairs with a strata term. Note to self: AND WHAT TO DO ABOUT THE NB MODEL????
+the individual variables indicated in Table \ref{tab:tab1fcm} and partly in the matched cohort, 
+modelling the dependence between pairs with a strata term. 
+
+### Assumptions
+
+The proportional hazards assumption was investigated using the scaled Schoenfeld 
+residuals (cox.zph in [@survival-package]) for the primary outcome 
+in the ps matched cohort. 
+Possible outliers were visually inspected by plotting the dfbetas. 
+=> No action deemed necessary. 
 
 The median (min-max) follow-up is 
 `r pdata_fcm %>% summarise(med = dF(median(sos_outtime_death / 365.25 * 12), dig = 1),
@@ -208,6 +223,15 @@ The median (min-max) follow-up is
 
 ```
 
+\clearpage
+\newpage
+
+### Subgroups
+
+Performed using an interaction term between FCM and EF on the patients in the matched cohort. 
+Note that there is missing data for EF so the matching (and thereby the adjustment) 
+may therefore be incomplete. 
+
 ```{r, child = "../src/outtab_fcm_ef.Rmd"}
 
 ```
@@ -215,9 +239,22 @@ The median (min-max) follow-up is
 \clearpage
 \newpage
 
+## Predictors of FCM use 
+
+The association between baseline covariates and FCM was investigated using logistic regression. 
+
 ```{r, child = "../src/pred_fcm.Rmd"}
 
 ```
+
+### Assumptions
+
+Outliers were investigated with Cook's distance and multicollinearity 
+with the variance inflation factor in the full model in the overall population.
+=> No action deemed necessary. 
+
+\clearpage
+\newpage
 
 # Reproducibility
 

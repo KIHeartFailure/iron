@@ -1,9 +1,9 @@
 version: 0.9.2
-data_loading: FALSE
+data_loading: TRUE
 data_loading_header: TRUE
-data_ignore:
+data_ignore: patreg.RData, rsdata315.RData
 cache_loading: TRUE
-recursive_loading: FALSE
+recursive_loading: TRUE
 munging: FALSE
 logging: FALSE
 logging_level: INFO

@@ -14,4 +14,4 @@ save(file = "./data/patreg.RData", list = c("patreg"))
 
 swedenmap <- getData("GADM", country="SWE", level=1)
 
-saveRDS("swedenmap", file = "./data/swedenmap.rds")
+saveRDS(swedenmap, file = "./data/swedenmap.rds")

@@ -2,7 +2,7 @@
 
 tab1all <- print(CreateTableOne(
   vars = tabvars[tabvars != "shf_ferrocarboxymaltosis"],
-  data = pdata,
+  data = pdata_fcm,
   strata = "shf_ferrocarboxymaltosis"
 ),
 missing = TRUE, printToggle = FALSE, nonnormal = tabvars,
@@ -12,7 +12,7 @@ explain = FALSE,
 smd = TRUE
 )
 tab1all <- as_tibble(cbind(var = rownames(tab1all), tab1all)) %>%
-    select(var, Missing, No:p, SMD)
+  select(var, Missing, No:p, SMD)
 
 tab1m <- print(CreateTableOne(
   vars = tabvars[tabvars != "shf_ferrocarboxymaltosis"],
@@ -26,7 +26,7 @@ explain = FALSE,
 smd = TRUE
 )
 tab1m <- as_tibble(cbind(var = rownames(tab1m), tab1m)) %>%
-    select(var, No:p, SMD)
+  select(var, No:p, SMD)
 
 
 tab1 <- Reduce(
@@ -76,10 +76,11 @@ tab1 <- tab1 %>%
     footnote1 = if_else(str_detect(var, "^shf_"), footnote_marker_symbol(1), ""),
     footnote2 = if_else(str_detect(var, "sos_"), footnote_marker_symbol(2), ""),
     footnote3 = if_else(str_detect(var, "^scb_"), footnote_marker_symbol(3), ""),
-    footnote4 = if_else(var_tmp %in% modvars_fcm, footnote_marker_symbol(4), ""),
-    footnote5 = if_else(str_detect(var, "^shf_rasarni"), footnote_marker_symbol(5), ""),
-    footnote6 = if_else(str_detect(var, "^scb_dispincome_cat"), footnote_marker_symbol(6), ""),
-    footnote7 = if_else(str_detect(var, "^shf_ntpropbnp_cat"), footnote_marker_symbol(7), "")
+    footnote4 = if_else(var_tmp %in% c(modvars_fcm, "shf_indexyear"), footnote_marker_symbol(4), ""),
+    footnote5 = if_else(str_detect(var, "^shf_indexyear"), footnote_marker_symbol(5), ""),
+    footnote6 = if_else(str_detect(var, "^shf_rasarni"), footnote_marker_symbol(6), ""),
+    footnote7 = if_else(str_detect(var, "^scb_dispincome_cat"), footnote_marker_symbol(7), ""),
+    footnote8 = if_else(str_detect(var, "^shf_ntpropbnp_cat"), footnote_marker_symbol(8), "")
   ) %>%
   unite(footnote, starts_with("footnote"), sep = "") %>%
   mutate(
@@ -118,7 +119,8 @@ footnote(
     "Source: SwedeHF",
     "Source: NPR",
     "Source: SCB",
-    "Included in the multiple imputation model (althought not necessarily imputed if there is no missing data) and logistic/cox models",
+    "Included in the multiple imputation model (not shf_anemia) and logistic/cox models)",
+    "Included in the models (not logistic) as a continuous variable year and month",
     "arb/acei/arni",
     "Medium within index year",
     "Medium within EF"

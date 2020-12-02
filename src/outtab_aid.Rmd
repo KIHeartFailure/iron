@@ -26,7 +26,6 @@ survfunc <- function(time, event, eventname, rep = FALSE) {
       )
   }
 
-
   s <- pdata %>%
     group_by(shf_aid) %>%
     summarise(

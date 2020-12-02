@@ -5,10 +5,10 @@
 noimpvars <- names(pdata)[!names(pdata) %in% modvars]
 
 # Nelson-Aalen estimator
-na <- basehaz(coxph(Surv(sos_outtime_death, sos_out_deathhosphf == "Yes") ~ 1,
+na <- basehaz(coxph(Surv(sos_outtime_hosphf, sos_out_deathhosphf == "Yes") ~ 1,
   data = pdata, method = "breslow"
 ))
-pdata <- left_join(pdata, na, by = c("sos_outtime_death" = "time"))
+pdata <- left_join(pdata, na, by = c("sos_outtime_hosphf" = "time"))
 
 ini <- mice(pdata, maxit = 0, print = F)
 
@@ -51,3 +51,8 @@ imp <-
     )
   }
 stopImplicitCluster()
+
+
+# Imputed dataset for FCM pop ---------------------------------------------
+
+imp_fcm <- subset_datlist(imp, subset = c(pdata$shf_id == "Yes" | pdata$shf_ferrocarboxymaltosis == "Yes"))

@@ -92,9 +92,9 @@ survfunc <- function(time, event, eventname, rep = FALSE) {
     ))
 
     ## adjusted individual covariates
-    amod <- with(imp, coxph(formula(paste0(
+    amod <- with(imp_fcm, coxph(formula(paste0(
       "Surv(", time, ",", event, " == 'Yes') ~ shf_ferrocarboxymaltosis +",
-      paste(modvars, collapse = " + ")
+      paste(modvars_fcm, collapse = " + ")
     ))))
 
     ## df the number of events minus the regression coefficients.
@@ -142,10 +142,9 @@ survfunc <- function(time, event, eventname, rep = FALSE) {
     ))
 
     ## adjusted individual covariates
-    imp_fcm <- subset_datlist(imp, subset = c(pdata$shf_id == "Yes" | pdata$shf_ferrocarboxymaltosis == "Yes"))
     amod <- with(imp_fcm, glm.nb(formula(paste0(
       event, " ~ shf_ferrocarboxymaltosis + offset(log(", time, ")) +",
-      paste(modvars, collapse = " + ")
+      paste(modvars_fcm, collapse = " + ")
     ))))
 
     asmod <- summary(pool(amod))
@@ -174,6 +173,11 @@ survfunc <- function(time, event, eventname, rep = FALSE) {
   return(out)
 }
 
+resphosp <- survfunc(
+  time = "sos_outtime_hosprespiratory",
+  event = "sos_out_hosprespiratory",
+  eventname = "First respiratory hospitalization"
+)
 deathhfhosp <- survfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_deathhosphf",
@@ -220,6 +224,7 @@ hfvisrep <- survfunc(
 
 
 outall <- bind_rows(
+  resphosp,
   deathhfhosp,
   death,
   hfhosp,

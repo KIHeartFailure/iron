@@ -8,17 +8,15 @@ memory.limit(size = 10000000000000)
 
 ProjectTemplate::reload.project(
   reset = TRUE,
-  data_loading = TRUE,
+  data_ignore = '', 
   munging = TRUE
 )
-
-ProjectTemplate::cache("meta.variables.Sheet.1")
-ProjectTemplate::cache("swedenmap")
 
 ProjectTemplate::cache("flow")
 ProjectTemplate::cache("pdata")
 ProjectTemplate::cache("imp")
 ProjectTemplate::cache("pdata_fcm")
+ProjectTemplate::cache("imp_fcm")
 ProjectTemplate::cache("matchp_fcm")
 ProjectTemplate::cache("matchingn")
 
@@ -27,6 +25,3 @@ ProjectTemplate::cache("metaout")
 ProjectTemplate::cache("tabvars")
 ProjectTemplate::cache("modvars")
 ProjectTemplate::cache("modvars_fcm")
-
-#ProjectTemplate::cache("modvarsns")
-

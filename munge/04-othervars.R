@@ -4,9 +4,8 @@
 
 pdata <- pdata %>%
   mutate(
-    
-    shf_ferrocarboxymaltosisnum = if_else(shf_ferrocarboxymaltosis == "Yes", 1, 0), 
-    
+    shf_ferrocarboxymaltosisnum = if_else(shf_ferrocarboxymaltosis == "Yes", 1, 0),
+
     # Anemia
     shf_anemia = case_when(
       is.na(shf_hb) ~ NA_character_,
@@ -16,18 +15,19 @@ pdata <- pdata %>%
     # iron def
     shf_id = case_when(
       shf_ferritin < 100 ~ "Yes",
-      shf_ferritin <= 299  & shf_transferrin < 20 ~ "Yes", 
+      shf_ferritin <= 299 & shf_transferrin < 20 ~ "Yes",
       TRUE ~ "No"
     ),
     shf_aid = factor(case_when(
-      shf_id == "Yes" & shf_anemia == "Yes" ~ 4, 
-      shf_id == "Yes" & shf_anemia == "No" ~ 3, 
-      shf_id == "No" & shf_anemia == "Yes" ~ 2, 
+      shf_id == "Yes" & shf_anemia == "Yes" ~ 4,
+      shf_id == "Yes" & shf_anemia == "No" ~ 3,
+      shf_id == "No" & shf_anemia == "Yes" ~ 2,
       shf_id == "No" & shf_anemia == "No" ~ 1
-    ), 
+    ),
     levels = 1:4,
-    labels = c("A-/ID-", "A+/ID-", "A-/ID+", "A+/ID+")),
-    
+    labels = c("A-/ID-", "A+/ID-", "A-/ID+", "A+/ID+")
+    ),
+
     shf_age_cat = case_when(
       shf_age < 75 ~ "<75",
       shf_age >= 75 ~ ">=75"
@@ -41,12 +41,10 @@ pdata <- pdata %>%
     labels = c("HFrEF", "HFmrEF", "HFpEF"),
     levels = 1:3
     ),
-    
-    #shf_nyha_cat = case_when(
-    #  shf_nyha %in% c("I", "II") ~ "I-II",
-    #  shf_nyha %in% c("III", "IV") ~ "III-IV"
-    #),
 
+    shf_indexmonth = as.numeric(factor(ym(paste0(shf_indexyear, month(shf_indexdtm))))),
+    shf_indexyear = as.factor(shf_indexyear),
+    
     shf_smoking_cat = factor(case_when(
       shf_smoking %in% c("Never") ~ 1,
       shf_smoking %in% c("Former", "Current") ~ 2
@@ -127,7 +125,7 @@ pdata <- pdata %>%
       TRUE ~ "No"
     ),
     # Outcomes
-    
+
     # composite outcome
     sos_out_deathhosphf = case_when(
       sos_out_death == "Yes" |
