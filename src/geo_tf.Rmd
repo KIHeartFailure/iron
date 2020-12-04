@@ -1,0 +1,89 @@
+```{r geotf, cache=cacheon}
+
+geotf <- pdata_tf %>%
+  filter(!is.na(scb_region)) %>%
+  group_by(scb_region) %>%
+  count(shf_tf2) %>%
+  mutate(percent = n / sum(n) * 100) %>%
+  ungroup() %>%
+  pivot_wider(names_from = shf_tf2, values_from = c(n, percent)) %>%
+  mutate(
+    n_No = replace_na(n_No, 0),
+    np = paste0(n_Yes, "/", n_Yes + n_No, " (", dF(percent_Yes, 1), "%)"),
+    percent_cat = case_when(
+      percent_Yes <= 10 ~ 1,
+      percent_Yes <= 20 ~ 2,
+      percent_Yes <= 30 ~ 3,
+      percent_Yes > 30 ~ 4
+    ),
+    scb_region_txt = case_when(
+      scb_region == "01" ~ "Stockholms län",
+      scb_region == "03" ~ "Uppsala län",
+      scb_region == "04" ~ "Södermanlands län",
+      scb_region == "05" ~ "Östergötlands län",
+      scb_region == "06" ~ "Jönköpings län",
+      scb_region == "07" ~ "Kronobergs län",
+      scb_region == "08" ~ "Kalmar län",
+      scb_region == "09" ~ "Gotlands län",
+      scb_region == "10" ~ "Blekinge län",
+      scb_region == "12" ~ "Skåne län",
+      scb_region == "13" ~ "Hallands län",
+      scb_region == "14" ~ "Västra Götalands län",
+      scb_region == "17" ~ "Värmlands län",
+      scb_region == "18" ~ "Örebro län",
+      scb_region == "19" ~ "Västmanlands län",
+      scb_region == "20" ~ "Dalarnas län",
+      scb_region == "21" ~ "Gävleborgs län",
+      scb_region == "22" ~ "Västernorrlands län",
+      scb_region == "23" ~ "Jämtlands län",
+      scb_region == "24" ~ "Västerbottens län",
+      scb_region == "25" ~ "Norrbottens län"
+    ),
+    scb_region_mapnr = case_when(
+      scb_region == "01" ~ 15,
+      scb_region == "03" ~ 16,
+      scb_region == "04" ~ 14,
+      scb_region == "05" ~ 12,
+      scb_region == "06" ~ 7,
+      scb_region == "07" ~ 9,
+      scb_region == "08" ~ 8,
+      scb_region == "09" ~ 4,
+      scb_region == "10" ~ 1,
+      scb_region == "12" ~ 13,
+      scb_region == "13" ~ 5,
+      scb_region == "14" ~ 21,
+      scb_region == "17" ~ 17,
+      scb_region == "18" ~ 11,
+      scb_region == "19" ~ 20,
+      scb_region == "20" ~ 2,
+      scb_region == "21" ~ 3,
+      scb_region == "22" ~ 19,
+      scb_region == "23" ~ 6,
+      scb_region == "24" ~ 18,
+      scb_region == "25" ~ 10
+    )
+  )
+
+
+mykable(geotf %>% select(scb_region_txt, np),
+  col.names = c("Region", "N with transferrin and/or ferritin measure/N Total (%)"),
+  caption = "Geographical distribution of transferrin/ferritin measure in Sweden",
+  scale_down = F
+)
+```
+
+```{r geotfmap, fig.cap="Geographical distribution of transferrin/ferritin measure in Sweden", cache=cacheon, dependson="geotf"}
+
+mapcols <- rev(c(
+  grDevices::rgb(135, 0, 82, maxColorValue = 255),
+  grDevices::rgb(212, 9, 99, maxColorValue = 255),
+  grDevices::rgb(250, 150, 170, maxColorValue = 255),
+  grDevices::rgb(189, 171, 179, maxColorValue = 255)
+))
+
+mapdata <- geotf %>%
+  arrange(scb_region_mapnr)
+
+plot(swedenmap, col = mapcols[mapdata$percent_cat], border = 0)
+legend("topright", bty = "n", border = mapcols, fill = mapcols, legend = c("0-10%", "11-20%", "21-30%", "31-100%"))
+```

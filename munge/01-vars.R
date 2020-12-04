@@ -112,3 +112,5 @@ tabvars_not_in_mod <- c(
 modvars <- c(tabvars[!(tabvars %in% tabvars_not_in_mod)], "shf_indexmonth")
 
 modvars_fcm <- c(modvars, "shf_anemia")
+
+modvars_tf <- c(modvars, "shf_anemia")

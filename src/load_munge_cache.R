@@ -12,16 +12,23 @@ ProjectTemplate::reload.project(
   munging = TRUE
 )
 
+ProjectTemplate::cache("metaout")
+
 ProjectTemplate::cache("flow")
+ProjectTemplate::cache("flow_tf")
+
 ProjectTemplate::cache("pdata")
-ProjectTemplate::cache("imp")
 ProjectTemplate::cache("pdata_fcm")
+ProjectTemplate::cache("pdata_tf")
+
+ProjectTemplate::cache("imp")
 ProjectTemplate::cache("imp_fcm")
+ProjectTemplate::cache("imp_tf")
+
 ProjectTemplate::cache("matchp_fcm")
 ProjectTemplate::cache("matchingn")
-
-ProjectTemplate::cache("metaout")
 
 ProjectTemplate::cache("tabvars")
 ProjectTemplate::cache("modvars")
 ProjectTemplate::cache("modvars_fcm")
+ProjectTemplate::cache("modvars_tf")

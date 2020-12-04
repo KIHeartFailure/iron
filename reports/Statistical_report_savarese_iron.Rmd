@@ -53,6 +53,10 @@ SHFDB3, https://kiheartfailure.github.io/shfdb3/, v 3.1.5.
 
 ## Inclusion/exclusion criteria
 
+Two populations are used, one for the main analysis, A/ID status and FCM use, 
+the latter on a subset, 
+and one for the distribution of recorded measures for transferrin/ferritin (TF population).
+
 ```{r flow}
 mykable(flow, caption = "Flowchart")
 ```
@@ -65,6 +69,22 @@ The median age (IQR) is `r pdata %>% summarise(med = dF(median(shf_age), dig = 1
                                    mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
                                    pull(out)` and 
 `r pdata %>% count(shf_sex) %>%
+  mutate(perc = dF(n / sum(n) * 100, 1)) %>%
+  filter(shf_sex == "Female") %>%
+  pull(perc)`% females.    
+
+```{r flowtf}
+mykable(flow_tf, caption = "Flowchart for TF population")
+```
+
+First patient in for the TF population: `r min(pdata_tf$shf_indexdtm)` and last patient in: `r max(pdata_tf$shf_indexdtm)`.  
+
+The median age (IQR) in the TF population is `r pdata_tf %>% summarise(med = dF(median(shf_age), dig = 1),
+                                             q1 = dF(quantile(shf_age, probs = 0.25), dig = 1),
+                                             q3 = dF(quantile(shf_age, probs = 0.75), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", q1, "-", q3, ")")) %>%
+                                   pull(out)` and 
+`r pdata_tf %>% count(shf_sex) %>%
   mutate(perc = dF(n / sum(n) * 100, 1)) %>%
   filter(shf_sex == "Female") %>%
   pull(perc)`% females.    
@@ -83,6 +103,55 @@ All analyses were performed using `r sessionInfo()$R.version$version.string` [@r
 The level of significance is set to 5%, two-sided. No adjustment for multiple 
 comparisons were made and therefore the results should be viewed with some care.
 
+# Transferrin/ferritin measure
+
+## Missing data
+
+Missing data was imputed with multiple imputation (n = 10) using mice [@mice]. 
+Variables included in the model are indicated in 
+Table \ref{tab:tab1tf}. The primary outcome, 
+first heart failure hospitalization/all-cause death,
+was included as the Nelson-Aalen estimator. Anemia and FCM are included 
+in the imputation model but not transferrin/ferritin. 
+
+## Baseline characteristics according to measure of transferrin/ferritin
+
+The baseline characteristics are presented partly for 4 groups 
+(measure on neither transferrin nor ferritin, measure on only transferrin, only on ferritin and on both)
+and partly for two groups (measure on either transferrin or ferritin or measure on none). 
+All other analysis on transferrin/ferritin measure are performed on the latter. 
+
+```{r, child = "../src/tab1_tf.Rmd"}
+
+```
+
+```{r, child = "../src/geo_tf.Rmd"}
+
+```
+
+\clearpage
+\newpage
+
+## Predictors of transferrin/ferritin measure
+
+The association between baseline covariates and transferrin/ferritin measure
+was investigated using logistic regression. 
+
+```{r, child = "../src/pred_tf.Rmd"}
+
+```
+
+### Assumptions
+
+Outliers were investigated with Cook's distance and multicollinearity 
+with the variance inflation factor in the full model in the overall population.
+=> No action deemed necessary. 
+
+\clearpage
+\newpage
+
+# A/ID status
+
 ## Missing data
 
 Missing data was imputed with multiple imputation (n = 10) using mice [@mice]. 
@@ -91,8 +160,6 @@ Table \ref{tab:tab1aidall}. The primary outcome,
 first heart failure hospitalization/all-cause death,
 was included as the Nelson-Aalen estimator. Anemia, ID and FCM are not included 
 in the imputation model. 
-
-# A/ID status
 
 ## Baseline characteristics according to A/ID status
 
@@ -156,6 +223,10 @@ The median (min-max) follow-up is
 In this analysis patients are included if the are ID 
 (ferritin <100 µg/L, or ferritin between 100–299 µg/L and transferrin saturation <20%) or
 are taking FCM.
+
+## Missing data
+
+The same imputation was used as for A/ID.
 
 ## Propensity scores and matching
 

@@ -53,9 +53,29 @@ plot(testpat[1], resid = F, ylim = c(-4, 4))
 
 # Outliers ---------------------------------------------------------------
 
-modlm <- glm(formula(paste0("shf_ferrocarboxymaltosis == 'Yes' ~ ", paste(modvars, collapse = " + "))),
-                                family = binomial(link = "logit"), data = pdata_fcm)
+modvars_fcmpred <- c(modvars_fcm[modvars_fcm != "shf_indexmonth"], "shf_indexyear")
 
+modlm <- glm(formula(paste0("shf_ferrocarboxymaltosis == 'Yes' ~ ", paste(modvars_fcmpred, collapse = " + "))),
+                                family = binomial(link = "logit"), data = dataass, 
+             subset = c(pdata$shf_id == "Yes" | pdata$shf_ferrocarboxymaltosis == "Yes"))
+
+
+plot(modlm, which = 4, id.n = 3)
+
+
+# Multicollinearity -------------------------------------------------------
+
+car::vif(modlm)
+
+
+# Outliers ---------------------------------------------------------------
+
+dataass <- mice::complete(imp_tf, 3)
+
+modvars_tfpred <- c(modvars_tf[modvars_tf != "shf_indexmonth"], "shf_indexyear")
+
+modlm <- glm(formula(paste0("shf_tf2 == 'Yes' ~ ", paste(modvars_tfpred, collapse = " + "))),
+             family = binomial(link = "logit"), data = dataass)
 
 plot(modlm, which = 4, id.n = 3)
 
