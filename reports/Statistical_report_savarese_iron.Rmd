@@ -118,7 +118,8 @@ Data were censored at 2018-12-31 or death/emigration.
 
 The outcomes are presented with the 1 - Kaplan-Meier curves with the overall p 
 from the crude cox regression presented in the figure. Cox proportional hazards regressions were 
-used to model the time to first event analysis and negative binomial regression to model 
+used to model the time to first event analysis and negative 
+binomial regression including the log of time as an offset in the model for 
 the repeated events. The models were partly crude and partly adjusted for variables 
 indicated in Table \ref{tab:tab1aidall}.
 
@@ -192,7 +193,8 @@ Data were censored at 2018-12-31 or death/emigration.
 
 The outcomes are presented with the 1 - Kaplan-Meier curves with the p 
 from the cox regressions presented in the figure. Cox proportional hazards regressions were 
-used to model the time to first event analysis and negative binomial regression to model 
+used to model the time to first event analysis and negative 
+binomial regression including the log of time as an offset in the model for 
 the repeated events. The models were partly crude, partly adjusted for 
 the individual variables indicated in Table \ref{tab:tab1fcm} and partly in the matched cohort, 
 modelling the dependence between pairs with a strata term. 
