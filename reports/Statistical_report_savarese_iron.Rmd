@@ -224,6 +224,10 @@ In this analysis patients are included if the are ID
 (ferritin <100 µg/L, or ferritin between 100–299 µg/L and transferrin saturation <20%) or
 are taking FCM.
 
+```{r, child = "../src/diffdate_fcm.Rmd"}
+
+```
+
 ## Missing data
 
 The same imputation was used as for A/ID.

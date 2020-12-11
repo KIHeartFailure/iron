@@ -1,6 +1,6 @@
 ```{r predfcm, fig.cap="Predictors of use of FCM", cache=cacheon}
 
-modvars_fcmpred <- c(modvars_fcm[modvars_fcm != "shf_indexmonth"], "shf_indexyear")
+modvars_fcmpred <- c(modvars_fcm[!modvars_fcm %in% c("shf_indexmonth", "shf_location")], "shf_indexyear")
 
 ormod <- with(imp_fcm, glm(formula(paste0("shf_ferrocarboxymaltosis == 'Yes' ~ ", paste(modvars_fcmpred, collapse = " + "))),
   family = binomial(link = "logit")

@@ -119,7 +119,7 @@ footnote(
     "Source: SwedeHF",
     "Source: NPR",
     "Source: SCB",
-    "Included in the multiple imputation model (not shf_anemia) and logistic/cox models)",
+    "Included in the multiple imputation model (not shf_anemia) and logistic (not shf_location)/cox models)",
     "Included in the models (not logistic) as a continuous variable year and month",
     "arb/acei/arni",
     "Medium within index year",

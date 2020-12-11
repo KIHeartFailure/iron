@@ -1,0 +1,41 @@
+```{r diffdatefcm, cache=cacheon}
+
+diffdate_all <- pdata_fcm %>%
+  filter(!is.na(shf_ferrocarboxymaltosisdate)) %>%
+  mutate(
+    diff = shf_indexdtm - shf_ferrocarboxymaltosisdate,
+    shf_location = "Overall"
+  ) %>%
+  group_by(shf_location) %>%
+  summarise(
+    min = min(diff),
+    q1 = quantile(diff, 0.25),
+    median = median(diff),
+    q3 = quantile(diff, 0.75),
+    max = max(diff),
+    .groups = "keep"
+  ) %>%
+  ungroup()
+
+
+diffdate_loc <- pdata_fcm %>%
+  filter(!is.na(shf_ferrocarboxymaltosisdate)) %>%
+  mutate(diff = shf_indexdtm - shf_ferrocarboxymaltosisdate) %>%
+  group_by(shf_location) %>%
+  summarise(
+    min = min(diff),
+    q1 = quantile(diff, 0.25),
+    median = median(diff),
+    q3 = quantile(diff, 0.75),
+    max = max(diff),
+    .groups = "keep"
+  ) %>%
+  ungroup()
+
+diffdate <- bind_rows(diffdate_all, diffdate_loc)
+
+mykable(diffdate,
+  caption = "Time from last FCM injection to index (date of discharge/visit)",
+  scale_down = FALSE
+)
+```
