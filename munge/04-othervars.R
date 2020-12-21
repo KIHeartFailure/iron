@@ -13,6 +13,18 @@ fixdata <- function(data) {
         shf_sex == "Female" & shf_hb < 120 | shf_sex == "Male" & shf_hb < 130 ~ "Yes",
         TRUE ~ "No"
       ),
+      shf_hb_cat8 = factor(case_when(shf_hb < 90 ~ 1, 
+                               shf_hb < 100 ~ 2, 
+                               shf_hb < 110 ~ 3, 
+                               shf_hb < 120 ~ 4, 
+                               shf_hb < 130 ~ 5, 
+                               shf_hb < 140 ~ 6, 
+                               shf_hb < 150 ~ 7, 
+                               shf_hb >= 150 ~ 8),
+                            levels = 1:8, 
+                            labels = c("<90", "90-99", "100-109", "110-119",
+                                       "120-129", "130-139", "140-149", ">=150")),
+        
       # iron def
       shf_id = case_when(
         shf_ferritin < 100 ~ "Yes",
