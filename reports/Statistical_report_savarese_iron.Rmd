@@ -112,7 +112,8 @@ Variables included in the model are indicated in
 Table \ref{tab:tab1tf}. The primary outcome, 
 first heart failure hospitalization/all-cause death,
 was included as the Nelson-Aalen estimator. Anemia and FCM are included 
-in the imputation model but not transferrin/ferritin. 
+in the imputation model but not transferrin/ferritin. A separate imputation 
+was performed replacing anemia with HB categories. 
 
 ## Baseline characteristics according to measure of transferrin/ferritin
 

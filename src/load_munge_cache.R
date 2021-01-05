@@ -24,6 +24,7 @@ ProjectTemplate::cache("pdata_tf")
 ProjectTemplate::cache("imp")
 ProjectTemplate::cache("imp_fcm")
 ProjectTemplate::cache("imp_tf")
+ProjectTemplate::cache("imp_tfhb")
 
 ProjectTemplate::cache("matchp_fcm")
 ProjectTemplate::cache("matchingn")
