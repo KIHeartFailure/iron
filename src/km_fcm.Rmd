@@ -28,8 +28,9 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
 
   # c(bottom, left, top, right)
   par(mar = c(5, 4, 4, 7) + 0.1)
-  plot(fitu,
+  plot(fitu[1],
     fun = "event",
+    conf.int = FALSE,
     ylab = eventname,
     xscale = 30.5,
     yscale = 100,
@@ -63,7 +64,7 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
   yposm <- 1 - summary(fitm, 365)$surv
 
   ylabs <- bind_cols(
-    ypos = c(yposm, yposu[1]),
+    ypos = c(yposm + yposplus[1:2], yposu[1] + yposplus[3]),
     ytext = c("No FCM matched", "FCM", "No FCM all")
   ) %>%
     arrange(ypos)
@@ -71,7 +72,7 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
   mtext(
     side = 4,
     line = .2,
-    at = ylabs$ypos + yposplus,
+    at = ylabs$ypos,
     ylabs$ytext,
     las = 1
   )
@@ -86,7 +87,7 @@ kmfunc(
   time = "sos_outtime_hosprespiratory",
   event = "sos_out_hosprespiratory",
   eventname = "First respiratory hospitalization (%)",
-  yposplus = c(-0.025, 0, 0.015) # lowest, middle, highest
+  yposplus = c(0.025, 0, -0.023) # matched no, matched yes, overall no
 )
 ```
 
@@ -95,7 +96,7 @@ kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_deathhosphf",
   eventname = "All-cause death/first HF hospitalization (%)",
-  yposplus = c(0, -0.01, 0.01) # lowest, middle, highest
+  yposplus = c(0, 0.02, 0)
 )
 ```
 
@@ -104,7 +105,7 @@ kmfunc(
   time = "sos_outtime_death",
   event = "sos_out_death",
   eventname = "All-cause death (%)",
-  yposplus = c(-0.01, +0.01, 0.02) # lowest, middle, highest
+  yposplus = c(0.025, -0.005, 0.0) 
 )
 ```
 
@@ -113,7 +114,7 @@ kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_hosphf",
   eventname = "First HF hospitalization (%)",
-  yposplus = c(0, -0.009, 0.009) # lowest, middle, highest
+  yposplus = c(0, 0.02, 0.00) # matched no, matched yes, overall no
 )
 ```
 
@@ -122,7 +123,7 @@ kmfunc(
   time = "sos_outtime_hospany",
   event = "sos_out_hospany",
   eventname = "First all-cause hospitalization (%)",
-  yposplus = c(0, 0, 0) # lowest, middle, highest
+  yposplus = c(0, 0, 0) 
 )
 ```
 
@@ -131,6 +132,6 @@ kmfunc(
   time = "sos_outtime_vishf",
   event = "sos_out_vishf",
   eventname = "First HF visit (%)",
-  yposplus = c(0, 0, 0) # lowest, middle, highest
+  yposplus = c(0, 0, 0)
 )
 ```

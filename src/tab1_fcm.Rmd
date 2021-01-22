@@ -80,7 +80,7 @@ tab1 <- tab1 %>%
     footnote5 = if_else(str_detect(var, "^shf_indexyear"), footnote_marker_symbol(5), ""),
     footnote6 = if_else(str_detect(var, "^shf_rasarni"), footnote_marker_symbol(6), ""),
     footnote7 = if_else(str_detect(var, "^scb_dispincome_cat"), footnote_marker_symbol(7), ""),
-    footnote8 = if_else(str_detect(var, "^shf_ntpropbnp_cat"), footnote_marker_symbol(8), "")
+    footnote8 = if_else(str_detect(var, "^shf_ntprobnp_cat"), footnote_marker_symbol(8), "")
   ) %>%
   unite(footnote, starts_with("footnote"), sep = "") %>%
   mutate(

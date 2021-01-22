@@ -49,7 +49,7 @@ cacheon <- TRUE
 
 ## Data source
 
-SHFDB3, https://kiheartfailure.github.io/shfdb3/, v 3.1.5. 
+SHFDB3, https://kiheartfailure.github.io/shfdb3/, v 3.2.0. 
 
 ## Inclusion/exclusion criteria
 
@@ -182,7 +182,7 @@ The following outcomes are considered:
 - Repeated all-cause hospitalization
 - Repeated HF visit
 
-Data were censored at 2018-12-31 or death/emigration. 
+Data were censored at 2019-12-31 or death/emigration. 
 
 The outcomes are presented with the 1 - Kaplan-Meier curves with the overall p 
 from the crude cox regression presented in the figure. Cox proportional hazards regressions were 
@@ -265,7 +265,7 @@ Other matching ratios: `r matchingn`.
 
 ## Outcomes according to the use of FCM
 
-Data were censored at 2018-12-31 or death/emigration. 
+Data were censored at 2019-12-31 or death/emigration. 
 
 The outcomes are presented with the 1 - Kaplan-Meier curves with the p 
 from the cox regressions presented in the figure. Cox proportional hazards regressions were 

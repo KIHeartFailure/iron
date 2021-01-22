@@ -182,7 +182,7 @@ fixdata <- function(data) {
   ntprobnp <- dataout %>%
     group_by(shf_ef_cat) %>%
     summarise(
-      ntmed = quantile(shf_ntpropbnp,
+      ntmed = quantile(shf_ntprobnp,
         probs = 0.5,
         na.rm = TRUE
       ),
@@ -195,11 +195,11 @@ fixdata <- function(data) {
     by = c("shf_ef_cat")
   ) %>%
     mutate(
-      shf_ntpropbnp_cat = case_when(
-        shf_ntpropbnp < ntmed ~ 1,
-        shf_ntpropbnp >= ntmed ~ 2
+      shf_ntprobnp_cat = case_when(
+        shf_ntprobnp < ntmed ~ 1,
+        shf_ntprobnp >= ntmed ~ 2
       ),
-      shf_ntpropbnp_cat = factor(shf_ntpropbnp_cat,
+      shf_ntprobnp_cat = factor(shf_ntprobnp_cat,
         levels = 1:2,
         labels = c("Below medium", "Above medium")
       )

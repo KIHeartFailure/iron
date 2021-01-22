@@ -2,7 +2,7 @@
 
 # Inclusion/exclusion criteria --------------------------------------------------------
 
-pdata <- rsdata315 %>%
+pdata <- rsdata320 %>%
   filter(casecontrol == "Case")
 
 flow <- c("Number of posts (cases) in SHFDB3", nrow(pdata))
@@ -28,7 +28,7 @@ colnames(flow) <- c("Criteria", "N")
 
 # For % measure on ferritin/transferrin -----------------------------------
 
-pdata_tf <- rsdata315 %>%
+pdata_tf <- rsdata320 %>%
   filter(casecontrol == "Case")
 
 flow_tf <- c("Number of posts (cases) in SHFDB3", nrow(pdata_tf))

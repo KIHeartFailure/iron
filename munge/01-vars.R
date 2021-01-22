@@ -39,8 +39,8 @@ tabvars <- c(
   "shf_potassium_cat",
   "shf_gfrckdepi",
   "shf_gfrckdepi_cat",
-  "shf_ntpropbnp",
-  "shf_ntpropbnp_cat",
+  "shf_ntprobnp",
+  "shf_ntprobnp_cat",
 
   # comorbs
   "shf_smoking_cat",
@@ -106,7 +106,7 @@ tabvars_not_in_mod <- c(
   "shf_potassium_cat",
   "shf_potassium",
   "shf_gfrckdepi",
-  "shf_ntpropbnp",
+  "shf_ntprobnp",
 
   "sos_com_charlsonci"
 )
