@@ -248,6 +248,9 @@ Other matching ratios: `r matchingn`.
 
 ## Baseline characteristics according to the use of FCM 
 
+First patient in for the matched population: `r min(matchp_fcm$shf_indexdtm)` 
+and last patient in for the matched population: `r max(matchp_fcm$shf_indexdtm)`.  
+
 ```{r, child = "../src/tab1_fcm.Rmd"}
 
 ```
