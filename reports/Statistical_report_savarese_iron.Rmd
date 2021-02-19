@@ -255,6 +255,10 @@ and last patient in for the matched population: `r max(matchp_fcm$shf_indexdtm)`
 
 ```
 
+```{r, child = "../src/tab1_fcm_ef.Rmd"}
+
+```
+
 ```{r, child = "../src/densitydose_fcm.Rmd"}
 
 ```
