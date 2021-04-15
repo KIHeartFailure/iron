@@ -70,6 +70,7 @@ orforest <- orforest %>%
       Variable == "shf_heartrate>70" ~ "Heart rate>70 vs <=70",
       Variable == "shf_locationOut-patient" ~ "Out vs In-patient",
       Variable == "shf_indexyear2018" ~ "Year of inclusion 2018 vs 2017",
+      Variable == "shf_ntprobnpAbove medium" ~ "NT-proBNP Above vs below medium",
       TRUE ~ Variable
     ),
     logor = as.numeric(logor)
@@ -210,6 +211,7 @@ orforest <- orforest %>%
       Variable == "shf_hb130-139" ~ "HB 130-139 vs <110",
       Variable == "shf_hb140-149" ~ "HB 140-149 vs <110",
       Variable == "shf_hb>=150" ~ "HB>=150 vs <110",
+      Variable == "shf_ntprobnpAbove medium" ~ "NT-proBNP Above vs below medium",
       TRUE ~ Variable
     ),
     logor = as.numeric(logor)
