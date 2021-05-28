@@ -148,6 +148,24 @@ Outliers were investigated with Cook's distance and multicollinearity
 with the variance inflation factor in the full model in the overall population.
 => No action deemed necessary. 
 
+## Outcome analysis according to transferrin/ferritin measure
+
+This analysis is only performed on patients with anemia. Data were censored at 2019-12-31 or death/emigration. 
+
+The median (min-max) follow-up is 
+`r pdata_tf %>% filter(shf_anemia == "Yes") %>% summarise(med = dF(median(sos_outtime_death / 365.25 * 12), dig = 1),
+                                             min = dF(min(sos_outtime_death / 365.25 * 12), dig = 1),
+                                             max = dF(max(sos_outtime_death / 365.25 * 12), dig = 1)) %>%
+                                   mutate(out = paste0(med, " (", min, "-", max, ")")) %>%
+                                   pull(out)` months for a total of 
+                                   `r pdata_tf %>%  filter(shf_anemia == "Yes") %>% 
+                                   summarise(sumpy = dF(sum(sos_outtime_death) / 365.25, dig = 0)) %>%
+                                   pull(sumpy)` patient-years of follow-up.
+
+```{r, child = "../src/outtab_tf.Rmd"}
+
+```
+
 \clearpage
 \newpage
 

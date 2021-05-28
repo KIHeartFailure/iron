@@ -74,12 +74,7 @@ mykable(geotf %>% select(scb_region_txt, np),
 
 ```{r geotfmap, fig.cap="Geographical distribution of transferrin/ferritin measure in Sweden", cache=cacheon, dependson="geotf"}
 
-mapcols <- rev(c(
-  grDevices::rgb(135, 0, 82, maxColorValue = 255),
-  grDevices::rgb(212, 9, 99, maxColorValue = 255),
-  grDevices::rgb(250, 150, 170, maxColorValue = 255),
-  grDevices::rgb(189, 171, 179, maxColorValue = 255)
-))
+mapcols <- rev(global_kicols[1:4])
 
 mapdata <- geotf %>%
   arrange(scb_region_mapnr)
