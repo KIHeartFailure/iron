@@ -126,6 +126,10 @@ All other analysis on transferrin/ferritin measure are performed on the latter.
 
 ```
 
+```{r, child = "../src/tab_anemia_tf.Rmd"}
+
+```
+
 ```{r, child = "../src/geo_tf.Rmd"}
 
 ```

@@ -1,0 +1,39 @@
+```{r tabanemiatf, cache=cacheon}
+
+taball <- pdata_tf %>%
+  group_by(shf_anemia) %>%
+  count(shf_tf2) %>%
+  mutate(
+    percent = dF(n / sum(n) * 100, 1),
+    np = paste0(n, " (", percent, "%)")
+  ) %>%
+  ungroup() %>%
+  filter(shf_tf2 == "Yes") %>%
+    select(shf_anemia, np) %>%
+  mutate(shf_ef_cat = "Overall") %>%
+  pivot_wider(names_from = shf_anemia, values_from = np) 
+  
+
+tabef <- pdata_tf %>%
+  group_by(shf_ef_cat, shf_anemia) %>%
+  count(shf_tf2) %>%
+  mutate(
+    percent = dF(n / sum(n) * 100, 1),
+    np = paste0(n, " (", percent, "%)")
+  ) %>%
+  ungroup() %>%
+  filter(shf_tf2 == "Yes") %>%
+  select(shf_anemia, shf_ef_cat, np) %>%
+  pivot_wider(names_from = shf_anemia, values_from = np) %>%
+  mutate(shf_ef_cat = if_else(is.na(shf_ef_cat), "Missing EF", as.character(shf_ef_cat)))
+
+
+taball2 <- bind_rows(taball, tabef) 
+
+colnames(taball2) <- c("EF", "Non-anemia", "Anemia", "Missing anemia")
+
+mykable(taball2,
+    fontsize = 6,
+    caption = sanitize_text("n (%) recorded transferrin/ferritin measure according to anemia and EF")
+  ) 
+```
