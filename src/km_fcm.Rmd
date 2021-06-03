@@ -1,18 +1,6 @@
 ```{r kmfcm, cache=cacheon}
 
-kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
-
-  # crude
-  fitu <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
-    data = pdata_fcm
-  )
-
-  ## cox
-  mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
-    data = pdata_fcm
-  )
-  pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
-  pu <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
+kmfunc <- function(time, event, eventname, yposplus = rep(0, 2)) {
 
   # adj match
   fitm <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
@@ -27,8 +15,8 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
   pm <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
 
   # c(bottom, left, top, right)
-  par(mar = c(5, 4, 4, 7) + 0.1)
-  plot(fitu[1],
+  par(mar = c(5, 4, 4, 6) + 0.1)
+  plot(fitm,
     fun = "event",
     conf.int = FALSE,
     ylab = eventname,
@@ -46,26 +34,14 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
     xaxs = "i", yaxs = "i"
   )
 
-  lines(fitm,
-    fun = "event",
-    xscale = 30.5,
-    yscale = 100,
-    col = global_kicols[c(3, 2)],
-    mark.time = FALSE,
-    lwd = 3,
-    lty = c(3, 2),
-    xaxs = "i", yaxs = "i"
-  )
-
   axis(2, seq(0, 1, 0.25), seq(0, 100, 25), las = 2)
   axis(1, at = seq(0, 12, 2) * 30.5, seq(0, 12, 2))
 
-  yposu <- 1 - summary(fitu, 365)$surv
   yposm <- 1 - summary(fitm, 365)$surv
 
   ylabs <- bind_cols(
-    ypos = c(yposm + yposplus[1:2], yposu[1] + yposplus[3]),
-    ytext = c("No FCM matched", "FCM", "No FCM all")
+    ypos = c(yposm + yposplus),
+    ytext = c("No FCM", "FCM")
   ) %>%
     arrange(ypos)
 
@@ -77,8 +53,7 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 3)) {
     las = 1
   )
 
-  text(20, 0.7, paste0("P-value all ", pu), pos = 4)
-  text(20, 0.65, paste0("P-value matched ", pm), pos = 4)
+  text(20, 0.65, paste0("P-value ", pm), pos = 4)
 }
 ```
 
@@ -87,7 +62,7 @@ kmfunc(
   time = "sos_outtime_hosprespiratory",
   event = "sos_out_hosprespiratory",
   eventname = "First respiratory hospitalization (%)",
-  yposplus = c(0.025, 0, -0.023) # matched no, matched yes, overall no
+  yposplus = c(0.025, 0) # matched no, matched yes
 )
 ```
 
@@ -96,7 +71,7 @@ kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_deathhosphf",
   eventname = "All-cause death/first HF hospitalization (%)",
-  yposplus = c(0, 0.02, 0)
+  yposplus = c(0, 0.02)
 )
 ```
 
@@ -105,7 +80,7 @@ kmfunc(
   time = "sos_outtime_death",
   event = "sos_out_death",
   eventname = "All-cause death (%)",
-  yposplus = c(0.025, -0.005, 0.0) 
+  yposplus = c(0.025, -0.005) 
 )
 ```
 
@@ -114,7 +89,7 @@ kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_hosphf",
   eventname = "First HF hospitalization (%)",
-  yposplus = c(0, 0.02, 0.00) # matched no, matched yes, overall no
+  yposplus = c(0, 0.02) # matched no, matched yes
 )
 ```
 
@@ -123,7 +98,7 @@ kmfunc(
   time = "sos_outtime_hospany",
   event = "sos_out_hospany",
   eventname = "First all-cause hospitalization (%)",
-  yposplus = c(0, 0, 0) 
+  yposplus = c(0, 0) 
 )
 ```
 
@@ -132,6 +107,6 @@ kmfunc(
   time = "sos_outtime_vishf",
   event = "sos_out_vishf",
   eventname = "First HF visit (%)",
-  yposplus = c(0, 0, 0)
+  yposplus = c(0, 0)
 )
 ```
