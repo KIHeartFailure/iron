@@ -243,7 +243,7 @@ The median (min-max) follow-up is
 
 # FCM 
 
-In this analysis patients are included if the are ID 
+In this analysis patients are included if the have ID 
 (ferritin <100 µg/L, or ferritin between 100–299 µg/L and transferrin saturation <20%) or
 are taking FCM.
 
@@ -335,11 +335,15 @@ The median (min-max) follow-up is
 
 ### Subgroups
 
-Performed using an interaction term between FCM and EF on the patients in the matched cohort. 
+Performed using an interaction term between FCM and EF and anemia respectively on the patients in the matched cohort. 
 Note that there is missing data for EF so the matching (and thereby the adjustment) 
 may therefore be incomplete. 
 
 ```{r, child = "../src/outtab_fcm_ef.Rmd"}
+
+```
+
+```{r, child = "../src/outtab_fcm_anemia.Rmd"}
 
 ```
 

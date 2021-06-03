@@ -1,0 +1,255 @@
+```{r outtabfcmanemia, cache=cacheon}
+survfunc <- function(time, event, eventname, rep = FALSE) {
+  out <- data.frame(matrix(NA, ncol = 9, nrow = 5))
+
+  out[1, 1] <- eventname
+  colnames(out) <- c("Outcome", "Anemia", "Model", rep(c(levels(pdata$shf_ferrocarboxymaltosis), "p interaction"), 2))
+
+  leva <- levels(pdata$shf_anemia)
+
+  for (i in seq_along(leva)) {
+    out[i * 2, 2] <- leva[i]
+
+    # incidence rate
+    out[i * 2, 3] <- "Incidence"
+
+    ## unmatched
+    if (!rep) {
+      ev <- pdata_fcm %>%
+        filter(shf_anemia == leva[i]) %>%
+        group_by(shf_ferrocarboxymaltosis) %>%
+        summarise(
+          ev = sum(!!sym(event) == "Yes"),
+          .groups = "rowwise"
+        )
+    }
+    if (rep) {
+      ev <- pdata_fcm %>%
+        filter(shf_anemia == leva[i]) %>%
+        group_by(shf_ferrocarboxymaltosis) %>%
+        summarise(
+          ev = sum(!!sym(event)),
+          .groups = "rowwise"
+        )
+    }
+
+    s <- pdata_fcm %>%
+      filter(shf_anemia == leva[i]) %>%
+      group_by(shf_ferrocarboxymaltosis) %>%
+      summarise(
+        s = sum(!!sym(time) / 365.25),
+        .groups = "rowwise"
+      )
+    r <- pois.exact(x = ev$ev, pt = s$s / 1000)
+
+    out[i * 2, 4:5] <- paste0(
+      ev$ev, ", ",
+      dF(s$s, dig = 0), ", ",
+      dF(r$rate, dig = 0), " (",
+      dF(r$lower, dig = 0), "-",
+      dF(r$upper, dig = 0), ")"
+    )
+
+    ## matched
+    if (!rep) {
+      ev <- matchp_fcm %>%
+        filter(shf_anemia == leva[i]) %>%
+        group_by(shf_ferrocarboxymaltosis) %>%
+        summarise(
+          ev = sum(!!sym(event) == "Yes"),
+          .groups = "rowwise"
+        )
+    }
+    if (rep) {
+      ev <- matchp_fcm %>%
+        filter(shf_anemia == leva[i]) %>%
+        group_by(shf_ferrocarboxymaltosis) %>%
+        summarise(
+          ev = sum(!!sym(event)),
+          .groups = "rowwise"
+        )
+    }
+
+    s <- matchp_fcm %>%
+      filter(shf_anemia == leva[i]) %>%
+      group_by(shf_ferrocarboxymaltosis) %>%
+      summarise(
+        s = sum(!!sym(time) / 365.25),
+        .groups = "rowwise"
+      )
+    r <- pois.exact(x = ev$ev, pt = s$s / 1000)
+
+    out[i * 2, 7:8] <- paste0(
+      ev$ev, ", ",
+      dF(s$s, dig = 0), ", ",
+      dF(r$rate, dig = 0), " (",
+      dF(r$lower, dig = 0), "-",
+      dF(r$upper, dig = 0), ")"
+    )
+
+    if (!rep) {
+      # cox regressions
+      ## crude
+      mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis * relevel(shf_anemia, ref = '", leva[i], "')")),
+        data = pdata_fcm
+      )
+      smod <- summary(mod)
+      out[i * 2 + 1, 3] <- "HR (95% CI), p-value"
+      out[i * 2 + 1, 4:5] <- c("ref", paste0(
+        dF(smod$conf.int[1, 1], dig = 2),
+        " (", dF(smod$conf.int[1, 3], dig = 2),
+        "-", dF(smod$conf.int[1, 4], dig = 2), "), ",
+        dF(smod$coef[1, 5], dig = 3, p = TRUE)
+      ))
+
+      if (i == 1) {
+        pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
+
+        out[1, 6] <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
+      }
+
+      ## adjusted matched
+      mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis * relevel(shf_anemia, ref = '", leva[i], "') +  strata(par)")),
+        data = matchp_fcm
+      )
+      smod <- summary(mod)
+      out[i * 2 + 1, 7:8] <- c("ref", paste0(
+        dF(smod$conf.int[1, 1], dig = 2),
+        " (", dF(smod$conf.int[1, 3], dig = 2),
+        "-", dF(smod$conf.int[1, 4], dig = 2), "), ",
+        dF(smod$coef[1, 5], dig = 3, p = TRUE)
+      ))
+
+      if (i == 1) {
+        pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
+
+        out[1, 9] <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
+      }
+    }
+
+    if (rep) {
+      # neg binomial regression
+      ## crude
+      mod <- glm.nb(formula(paste0(event, " ~ shf_ferrocarboxymaltosis * relevel(shf_anemia, ref = '", leva[i], "') + offset(log(", time, "))")),
+        data = pdata_fcm
+      )
+
+      smod <- summary(mod)
+      out[i * 2 + 1, 3] <- "Crude IRR (95% CI), p-value"
+      out[i * 2 + 1, 4:5] <- c("ref", paste0(
+        dF(exp(smod$coefficients[2, 1]), dig = 2),
+        " (", dF(exp(smod$coefficients[2, 1] - global_z05 * smod$coefficients[2, 2]), dig = 2),
+        "-", dF(exp(smod$coefficients[2, 1] + global_z05 * smod$coefficients[2, 2]), dig = 2), "), ",
+        dF(smod$coefficients[2, 4], dig = 3, p = TRUE)
+      ))
+
+      if (i == 1) {
+        pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
+
+        out[1, 6] <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
+      }
+
+      ## adjusted matched
+      mod <- glm.nb(formula(paste0(event, " ~ shf_ferrocarboxymaltosis * relevel(shf_anemia, ref = '", leva[i], "') + offset(log(", time, "))")),
+        data = matchp_fcm
+      )
+      smod <- summary(mod)
+
+      out[i * 2 + 1, 7:8] <- c("ref", paste0(
+        dF(exp(smod$coefficients[2, 1]), dig = 2),
+        " (", dF(exp(smod$coefficients[2, 1] - global_z05 * smod$coefficients[2, 2]), dig = 2),
+        "-", dF(exp(smod$coefficients[2, 1] + global_z05 * smod$coefficients[2, 2]), dig = 2), "), ",
+        dF(smod$coefficients[2, 4], dig = 3, p = TRUE)
+      ))
+
+      if (i == 1) {
+        pint <- car::Anova(mod, type = "III", test.statistic = "Wald")
+
+        out[1, 9] <- dF(last(pint$`Pr(>Chisq)`), dig = 3, p = TRUE)
+      }
+    }
+  }
+  return(out)
+}
+
+resphosp <- survfunc(
+  time = "sos_outtime_hosprespiratory",
+  event = "sos_out_hosprespiratory",
+  eventname = "First respiratory hospitalization (%)",
+)
+deathhfhosp <- survfunc(
+  time = "sos_outtime_hosphf",
+  event = "sos_out_deathhosphf",
+  eventname = "All-cause death/first HF hospitalization"
+)
+death <- survfunc(
+  time = "sos_outtime_death",
+  event = "sos_out_death",
+  eventname = "All-cause death"
+)
+hfhosp <- survfunc(
+  time = "sos_outtime_hosphf",
+  event = "sos_out_hosphf",
+  eventname = "First HF hospitalization"
+)
+hfhosprep <- survfunc(
+  time = "sos_outtime_death",
+  event = "sos_out_nohosphf",
+  eventname = "HF hospitalization",
+  rep = TRUE
+)
+anyhosp <- survfunc(
+  time = "sos_outtime_hospany",
+  event = "sos_out_hospany",
+  eventname = "First all-cause hospitalization"
+)
+anyhosprep <- survfunc(
+  time = "sos_outtime_death",
+  event = "sos_out_nohospany",
+  eventname = "All-cause hospitalization",
+  rep = TRUE
+)
+hfvis <- survfunc(
+  time = "sos_outtime_vishf",
+  event = "sos_out_vishf",
+  eventname = "First HF visit"
+)
+hfvisrep <- survfunc(
+  time = "sos_outtime_death",
+  event = "sos_out_novishf",
+  eventname = "HF visit",
+  rep = TRUE
+)
+
+
+outall <- bind_rows(
+  resphosp,
+  deathhfhosp,
+  death,
+  hfhosp,
+  hfhosprep,
+  anyhosp,
+  anyhosprep,
+  hfvis,
+  hfvisrep
+)
+
+colnames(outall) <- c("Outcome", "Anemia", "Model", rep(c(levels(pdata$shf_ferrocarboxymaltosis), "p interaction"), 2))
+
+write.xlsx(outall, paste0("./output/tabs/out_anemia_fcm_", Sys.Date(), ".xlsx"), rowNames = FALSE)
+
+myHeader <- c(" " = 1, " " = 1, " " = 1, "All (Crude)" = 3, "Matched (Adjusted)" = 3)
+names(myHeader) <- c(" ", " ", " ", "All (Crude)", "Matched (Adjusted)")
+
+footnote(mykable(outall,
+  fontsize = 4.5,
+  caption = "Outcomes FCM by Anemia",
+  longtable = TRUE
+) %>%
+  landscape() %>%
+  add_header_above(myHeader),
+general = c(
+  "Incidence =  no events, sum py, rate/1000py (95% CI)."
+)
+)
+```
