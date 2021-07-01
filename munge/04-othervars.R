@@ -2,6 +2,14 @@
 
 # Additional variables from mainly SHF ------------------------------------
 
+crfunc <- function(outvar, compvar) {
+  outvarcr <- case_when(
+    !!outvar == "Yes" ~ 1,
+    !!compvar == "Yes" ~ 2,
+    TRUE ~ 0
+  )
+}
+
 fixdata <- function(data) {
   dataout <- data %>%
     mutate(
@@ -43,6 +51,21 @@ fixdata <- function(data) {
       levels = 1:4,
       labels = c("A-/ID-", "A+/ID-", "A-/ID+", "A+/ID+")
       ),
+      shf_ferritin_cat = factor(case_when(
+        is.na(shf_ferritin) ~ NA_real_,
+        shf_ferritin < 100 ~ 2,
+        TRUE ~ 1
+      ), levels = 1:2, labels = c(">=100", "<100")),
+      shf_ferritin_cat300 = factor(case_when(
+        is.na(shf_ferritin) ~ NA_real_,
+        shf_ferritin < 300 ~ 2,
+        TRUE ~ 1
+      ), levels = 1:2, labels = c(">=300", "<300")),
+      shf_transferrin_cat = factor(case_when(
+        is.na(shf_transferrin) ~ NA_real_,
+        shf_transferrin < 20 ~ 2,
+        TRUE ~ 1
+      ), levels = 1:2, labels = c(">=20", "<20")),
 
       shf_age_cat = case_when(
         shf_age < 75 ~ "<75",
@@ -147,7 +170,14 @@ fixdata <- function(data) {
         sos_out_death == "Yes" |
           sos_out_hosphf == "Yes" ~ "Yes",
         TRUE ~ "No"
-      )
+      ),
+
+      # comp risk outcomes
+
+      sos_out_hosprespiratory_cr = crfunc(sos_out_hosprespiratory, sos_out_death),
+      sos_out_hosphf_cr = crfunc(sos_out_hosphf, sos_out_death),
+      sos_out_hospany_cr = crfunc(sos_out_hospany, sos_out_death),
+      sos_out_vishf_cr = crfunc(sos_out_vishf, sos_out_death)
     )
 
 

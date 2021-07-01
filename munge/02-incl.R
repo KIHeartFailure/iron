@@ -11,6 +11,11 @@ pdata <- pdata %>%
   filter(shf_indexdtm >= ymd("2017-01-01"))
 flow <- rbind(flow, c("Indexdate >= 1 Jan 2017 (ferritin/transferrin collected during this time)", nrow(pdata)))
 
+flow <- rbind(flow, c(". N missing ferritin", nrow(pdata %>% filter(is.na(shf_ferritin)))))
+flow <- rbind(flow, c(". N missing transferrin", nrow(pdata %>% filter(is.na(shf_transferrin)))))
+flow <- rbind(flow, c(". N missing FCM", nrow(pdata %>% filter(is.na(shf_ferrocarboxymaltosis)))))
+flow <- rbind(flow, c(". N missing hb", nrow(pdata %>% filter(is.na(shf_hb)))))
+
 pdata <- pdata %>%
   filter(!is.na(shf_transferrin) & !is.na(shf_ferritin) & !is.na(shf_ferrocarboxymaltosis) & !is.na(shf_hb))
 flow <- rbind(flow, c("No missing ferritin/transferrin/hb/FCM", nrow(pdata)))

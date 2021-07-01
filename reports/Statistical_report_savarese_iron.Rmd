@@ -58,7 +58,9 @@ the latter on a subset,
 and one for the distribution of recorded measures for transferrin/ferritin (TF population).
 
 ```{r flow}
-mykable(flow, caption = "Flowchart")
+footnote(mykable(flow, caption = "Flowchart"),
+  general = "N missing of ferritin, transferrin, hb and FCM respectivly is not ordered and the N missing for any of the 4 will therefore be less than the sum of the individual components."
+)
 ```
 
 First patient in: `r min(pdata$shf_indexdtm)` and last patient in: `r max(pdata$shf_indexdtm)`.  
@@ -206,12 +208,17 @@ The following outcomes are considered:
 
 Data were censored at 2019-12-31 or death/emigration. 
 
-The outcomes are presented with the 1 - Kaplan-Meier curves with the overall p 
+The outcomes are presented with the 1 - Kaplan-Meier curves for outcomes 
+including all-cause mortality and cumulative incidence curves, with death as a competing risk, for other outcomes,
+with the overall p 
 from the crude cox regression presented in the figure. Cox proportional hazards regressions were 
 used to model the time to first event analysis and negative 
 binomial regression including the log of time as an offset in the model for 
 the repeated events. The models were partly crude and partly adjusted for variables 
 indicated in Table \ref{tab:tab1aidall}.
+
+A Cox proportional hazards regressions was also fitted with ferritin (cut-off < 100) and transferrin (cut-off < 20) 
+separately in the model.  
 
 ### Assumptions
 
@@ -235,6 +242,17 @@ The median (min-max) follow-up is
 ```
 
 ```{r, child = "../src/outtab_aid.Rmd"}
+
+```
+
+# Ferritin/Transferrin 
+
+## Outcome analysis according to Ferritin/Transferrin 
+
+The outcomes are presented in a similar manner as above. 
+The population used is the same as for the A/ID status. 
+
+```{r, child = "../src/outtab_aidtf.Rmd"}
 
 ```
 
@@ -296,8 +314,9 @@ and last patient in for the matched population: `r max(matchp_fcm$shf_indexdtm)`
 
 Data were censored at 2019-12-31 or death/emigration. 
 
-The outcomes are presented with the 1 - Kaplan-Meier curves with the p 
-from the cox regressions presented in the figure. Cox proportional hazards regressions were 
+The outcomes are presented with the 1 - Kaplan-Meier curves for outcomes 
+including all-cause mortality and cumulative incidence curves, with death as a competing risk, for other outcomes,
+with the p from the cox regressions presented in the figure. Cox proportional hazards regressions were 
 used to model the time to first event analysis and negative 
 binomial regression including the log of time as an offset in the model for 
 the repeated events. The models were partly crude, partly adjusted for 

@@ -1,9 +1,18 @@
 ```{r kmaid, cache=cacheon}
 
-kmfunc <- function(time, event, eventname, yposplus = rep(0, 4)) {
-  fit <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_aid")),
-    data = pdata
-  )
+kmfunc <- function(time, event, eventcr = NULL, eventname, yposplus = rep(0, 4)) {
+  if (!is.null(eventcr)) {
+    fit <- cuminc(
+      ftime = pdata %>% pull(!!sym(time)),
+      fstatus = pdata %>% pull(!!sym(eventcr)),
+      cencode = 0,
+      group = pdata %>% pull(shf_aid)
+    )
+  } else {
+    fit <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_aid")),
+      data = pdata
+    )
+  }
 
   ## cox
   mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_aid")),
@@ -15,27 +24,48 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 4)) {
 
   # c(bottom, left, top, right)
   par(mar = c(5, 4, 4, 4) + 0.1)
-  plots <- plot(fit,
-    fun = "event",
-    ylab = eventname,
-    xscale = 30.5,
-    yscale = 100,
-    col = global_kicols,
-    mark.time = FALSE,
-    bty = "n",
-    xlim = c(0, 366),
-    ylim = c(0, 1),
-    xlab = "Months",
-    axes = F,
-    lwd = 3,
-    lty = c(1, 2, 3, 4),
-    xaxs = "i", yaxs = "i"
-  )
+
+  if (!is.null(eventcr)) {
+    plot(fit[1:4],
+      ylab = eventname,
+      col = global_kicols,
+      wh = c(1110, 1110),
+      xlim = c(0, 366),
+      ylim = c(0, 1),
+      xlab = "Months",
+      axes = F,
+      lwd = 3,
+      lty = c(1, 2, 3, 4),
+      xaxs = "i", yaxs = "i"
+    )
+  } else {
+    plot(fit,
+      fun = "event",
+      ylab = eventname,
+      xscale = 30.5,
+      yscale = 100,
+      col = global_kicols,
+      mark.time = FALSE,
+      bty = "n",
+      xlim = c(0, 366),
+      ylim = c(0, 1),
+      xlab = "Months",
+      axes = F,
+      lwd = 3,
+      lty = c(1, 2, 3, 4),
+      xaxs = "i", yaxs = "i"
+    )
+  }
 
   axis(2, seq(0, 1, 0.25), seq(0, 100, 25), las = 2)
   axis(1, at = seq(0, 12, 2) * 30.5, seq(0, 12, 2))
 
-  ypos <- 1 - summary(fit, 365)$surv
+  if (!is.null(eventcr)) {
+    ypos <- timepoints(fit[1:4], 12 * 30)$est
+  } else {
+    ypos <- 1 - summary(fit, 12 * 30)$surv
+  }
+
   ytext <- levels(pdata$shf_aid)
 
   ylabs <- bind_cols(ypos = ypos + yposplus, ytext = ytext) %>%
@@ -58,7 +88,7 @@ kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_deathhosphf",
   eventname = "All-cause death/first HF hospitalization (%)",
-  yposplus = c(0, +0, 0, 0) #A-/ID- A+/ID- A-/ID+ A+/ID+
+  yposplus = c(0, +0, 0, 0) # A-/ID- A+/ID- A-/ID+ A+/ID+
 )
 ```
 
@@ -67,7 +97,7 @@ kmfunc(
   time = "sos_outtime_death",
   event = "sos_out_death",
   eventname = "All-cause death (%)",
-  yposplus = c(-0.012, -0.005, 0.012, 0.02) #A-/ID- A+/ID- A-/ID+ A+/ID+
+  yposplus = c(-0.012, -0.005, 0.012, 0.02) # A-/ID- A+/ID- A-/ID+ A+/ID+
 )
 ```
 
@@ -75,8 +105,9 @@ kmfunc(
 kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_hosphf",
+  eventcr = "sos_out_hosphf_cr",
   eventname = "First HF hospitalization (%)",
-  yposplus = c(-0.0, 0, 0, 0) 
+  yposplus = c(-0.0, 0, 0, 0)
 )
 ```
 
@@ -84,8 +115,9 @@ kmfunc(
 kmfunc(
   time = "sos_outtime_hospany",
   event = "sos_out_hospany",
+  eventcr = "sos_out_hospany_cr",
   eventname = "First all-cause hospitalization (%)",
-  yposplus = c(-0.0, 0, 0, 0) 
+  yposplus = c(-0.0, 0, 0, 0)
 )
 ```
 
@@ -93,7 +125,8 @@ kmfunc(
 kmfunc(
   time = "sos_outtime_vishf",
   event = "sos_out_vishf",
+  eventcr = "sos_out_vishf_cr",
   eventname = "First HF visit (%)",
-  yposplus = c(-0.028, 0.026, 0.008, -0.008) #A-/ID- A+/ID- A-/ID+ A+/ID+
+  yposplus = c(0, 0.041, 0.017, -0.02) # A-/ID- A+/ID- A-/ID+ A+/ID+
 )
 ```

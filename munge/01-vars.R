@@ -11,7 +11,10 @@ tabvars <- c(
   "shf_indexyear",
 
   "shf_transferrin",
+  "shf_transferrin_cat",
   "shf_ferritin",
+  "shf_ferritin_cat",
+  "shf_ferritin_cat300",
   "shf_id",
   "shf_hb",
   "shf_anemia",
@@ -86,6 +89,9 @@ tabvars_not_in_mod <- c(
 
   "shf_transferrin",
   "shf_ferritin",
+  "shf_transferrin_cat",
+  "shf_ferritin_cat",
+  "shf_ferritin_cat300",
   "shf_id",
   "shf_hb",
   "shf_hb_cat",

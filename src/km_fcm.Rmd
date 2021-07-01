@@ -1,11 +1,20 @@
 ```{r kmfcm, cache=cacheon}
 
-kmfunc <- function(time, event, eventname, yposplus = rep(0, 2)) {
+kmfunc <- function(time, event, eventcr = NULL, eventname, yposplus = rep(0, 2)) {
+  if (!is.null(eventcr)) {
+    fit <- cuminc(
+      ftime = matchp_fcm %>% pull(!!sym(time)),
+      fstatus = matchp_fcm %>% pull(!!sym(eventcr)),
+      cencode = 0,
+      group = matchp_fcm %>% pull(shf_ferrocarboxymaltosis)
+    )
+  } else {
 
-  # adj match
-  fitm <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
-    data = matchp_fcm
-  )
+    # adj match
+    fit <- survfit(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis")),
+      data = matchp_fcm
+    )
+  }
 
   ## cox
   mod <- coxph(formula(paste0("Surv(", time, ",", event, "=='Yes') ~ shf_ferrocarboxymaltosis + strata(par)")),
@@ -16,31 +25,51 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 2)) {
 
   # c(bottom, left, top, right)
   par(mar = c(5, 4, 4, 6) + 0.1)
-  plot(fitm,
-    fun = "event",
-    conf.int = FALSE,
-    ylab = eventname,
-    xscale = 30.5,
-    yscale = 100,
-    col = global_kicols,
-    mark.time = FALSE,
-    bty = "n",
-    xlim = c(0, 366),
-    ylim = c(0, 1),
-    xlab = "Months",
-    axes = F,
-    lwd = 3,
-    lty = c(1, 2),
-    xaxs = "i", yaxs = "i"
-  )
+
+  if (!is.null(eventcr)) {
+    plot(fit[1:2],
+      ylab = eventname,
+      col = global_kicols,
+      wh = c(1110, 1110),
+      xlim = c(0, 366),
+      ylim = c(0, 1),
+      xlab = "Months",
+      axes = F,
+      lwd = 3,
+      lty = c(1, 2),
+      xaxs = "i", yaxs = "i"
+    )
+  } else {
+    plot(fit,
+      fun = "event",
+      conf.int = FALSE,
+      ylab = eventname,
+      xscale = 30.5,
+      yscale = 100,
+      col = global_kicols,
+      mark.time = FALSE,
+      bty = "n",
+      xlim = c(0, 366),
+      ylim = c(0, 1),
+      xlab = "Months",
+      axes = F,
+      lwd = 3,
+      lty = c(1, 2),
+      xaxs = "i", yaxs = "i"
+    )
+  }
 
   axis(2, seq(0, 1, 0.25), seq(0, 100, 25), las = 2)
   axis(1, at = seq(0, 12, 2) * 30.5, seq(0, 12, 2))
 
-  yposm <- 1 - summary(fitm, 365)$surv
+  if (!is.null(eventcr)) {
+    ypos <- timepoints(fit[1:2], 12 * 30)$est
+  } else {
+    ypos <- 1 - summary(fit, 12 * 30)$surv
+  }
 
   ylabs <- bind_cols(
-    ypos = c(yposm + yposplus),
+    ypos = c(ypos + yposplus),
     ytext = c("No FCM", "FCM")
   ) %>%
     arrange(ypos)
@@ -61,6 +90,7 @@ kmfunc <- function(time, event, eventname, yposplus = rep(0, 2)) {
 kmfunc(
   time = "sos_outtime_hosprespiratory",
   event = "sos_out_hosprespiratory",
+  eventcr = "sos_out_hosprespiratory_cr",
   eventname = "First respiratory hospitalization (%)",
   yposplus = c(0.025, 0) # matched no, matched yes
 )
@@ -80,7 +110,7 @@ kmfunc(
   time = "sos_outtime_death",
   event = "sos_out_death",
   eventname = "All-cause death (%)",
-  yposplus = c(0.025, -0.005) 
+  yposplus = c(0.025, -0.005)
 )
 ```
 
@@ -88,6 +118,7 @@ kmfunc(
 kmfunc(
   time = "sos_outtime_hosphf",
   event = "sos_out_hosphf",
+  eventcr = "sos_out_hosphf_cr",
   eventname = "First HF hospitalization (%)",
   yposplus = c(0, 0.02) # matched no, matched yes
 )
@@ -97,8 +128,9 @@ kmfunc(
 kmfunc(
   time = "sos_outtime_hospany",
   event = "sos_out_hospany",
+  eventcr = "sos_out_hospany_cr",
   eventname = "First all-cause hospitalization (%)",
-  yposplus = c(0, 0) 
+  yposplus = c(0, 0)
 )
 ```
 
@@ -106,6 +138,7 @@ kmfunc(
 kmfunc(
   time = "sos_outtime_vishf",
   event = "sos_out_vishf",
+  eventcr = "sos_out_vishf_cr",
   eventname = "First HF visit (%)",
   yposplus = c(0, 0)
 )
